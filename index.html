@@ -120,7 +120,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px s
         <h3>Om dig</h3>
         <div class="field"><label for="name">Ditt namn</label><input id="name" autocomplete="name"></div>
         <div class="field"><label for="team">Lag / grupp</label><input id="team" placeholder="t.ex. P-14, F-15"></div>
-        <div class="field"><label for="contact">Telefon eller e-post</label><input id="contact" autocomplete="email"></div>
+        <div class="field"><label for="contact">E-post (du får besked här när beställningen är klar)</label><input id="contact" autocomplete="email"></div>
         <div class="field"><label for="note">Kommentar (valfritt)</label><textarea id="note" rows="2"></textarea></div>
         <input type="checkbox" id="botcheck" tabindex="-1" autocomplete="off" style="display:none">
         <button type="button" id="make" class="primary" style="width:100%">Skicka beställning</button>
@@ -283,7 +283,7 @@ function buildText(){
 
 $('make').addEventListener('click', () => {
   const err = $('err'); err.textContent = '';
-  if (!$('name').value.trim() || !$('team').value.trim() || !$('contact').value.trim()){ err.textContent = 'Fyll i namn, lag och kontaktuppgift.'; return; }
+  if (!$('name').value.trim() || !$('team').value.trim() || !/^\S+@\S+\.\S+$/.test($('contact').value.trim())){ err.textContent = 'Fyll i namn, lag och en giltig e-postadress.'; return; }
   if (!cart.length){ err.textContent = 'Lägg till minst en artikel.'; return; }
   const orderId = nyttId();
   const text = 'Beställnings-ID: ' + orderId + '\n\n' + buildText();
@@ -293,27 +293,29 @@ $('make').addEventListener('click', () => {
   const btn = $('make'); btn.disabled = true; btn.textContent = 'Skickar…';
   if ($('botcheck').checked){ btn.disabled = false; btn.textContent = 'Skicka beställning'; return; }
   const contact = $('contact').value.trim();
+  const token = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2,'0')).join('');
+  const dealerLink = new URL('handlare.html?o=' + orderId + '&k=' + token, location.href).href;   // länk för sporthandlaren
   const mail = fetch('https://api.emailjs.com/api/v1.0/email/send', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
       service_id: EMAILJS_SERVICE_ID, template_id: EMAILJS_TEMPLATE_ID, user_id: EMAILJS_PUBLIC_KEY,
       template_params: {
         subject, order_id: orderId, name: $('name').value.trim(), team: $('team').value.trim(), contact,
-        note: $('note').value.trim() || '–', message: itemsHtml(), message_text: itemsText(),
+        note: $('note').value.trim() || '–', message: itemsHtml() + '<p><a href="' + dealerLink + '">Öppna beställningen och markera vad som är klart för upphämtning</a></p>', message_text: itemsText() + '\n\nMarkera klart för upphämtning: ' + dealerLink, dealer_link: dealerLink,
         reply_to: contact.includes('@') ? contact : MOTTAGARE
       }
     })
   }).then(async r => { if (!r.ok) throw new Error(await r.text() || r.status); });
-  Promise.allSettled([sparaDb(orderId, contact), mail]).then(([d, m]) => {
+  Promise.allSettled([sparaDb(orderId, contact, token), mail]).then(([d, m]) => {
     if (d.status === 'fulfilled' || m.status === 'fulfilled'){ $('doneId').textContent = orderId; showView('doneView'); }
     else { const e = m.reason; $('reason').textContent = 'Felorsak: ' + (e && e.message ? e.message : e); showView('sendView'); }
   }).finally(() => { btn.disabled = false; btn.textContent = 'Skicka beställning'; });
 });
 
 /* Sparar beställningen i databasen (Supabase) så att den syns i rapporterna i admin.html */
-function sparaDb(orderId, contact){
+function sparaDb(orderId, contact, token){
   if (!SUPABASE_URL) return Promise.reject(new Error('Databas ej konfigurerad'));
-  const order = {order_no:orderId, name:$('name').value.trim(), team:$('team').value.trim(), contact, note:$('note').value.trim(),
+  const order = {order_no:orderId, dealer_token:token, name:$('name').value.trim(), team:$('team').value.trim(), contact, note:$('note').value.trim(),
     items: cart.map(i => { const p = byId(i.pid); return {product_id:p.id, product_name:p.name, category:p.cat, size:i.size, qty:i.q, unit_price:p.price}; })};
   return fetch(SUPABASE_URL + '/rest/v1/rpc/place_order', {
     method:'POST', headers:{'Content-Type':'application/json', apikey:SUPABASE_ANON_KEY}, body: JSON.stringify({p:order})
