@@ -2,6 +2,7 @@
 <html lang="sv">
 <head>
 <meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Klubbshop – Skabersjö IF</title>
 <style>
@@ -65,16 +66,31 @@ h3{font-size:1rem;margin:20px 0 10px}
 pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;font:.9rem/1.5 ui-monospace,Menlo,monospace;margin:0 0 12px}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 .empty{color:var(--mute);text-align:center;padding:24px 0}
+.gate{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:16px}
+.gate .box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;width:min(380px,100%)}
+.gate h1{margin-bottom:6px}
+.gate p{color:var(--mute);margin:0 0 16px}
 [hidden]{display:none!important}
 </style>
 </head>
 <body>
+<div class="gate" id="gate">
+  <div class="box">
+    <h1>Klubbshop</h1>
+    <p>Skriv in klubbkoden för att komma till beställningen.</p>
+    <div class="field"><label for="code">Klubbkod</label><input id="code" type="password" autocomplete="off" autocapitalize="off"></div>
+    <button type="button" id="enter" class="primary" style="width:100%">Fortsätt</button>
+    <p class="err" id="codeErr" role="alert"></p>
+  </div>
+</div>
+<div id="shop" hidden>
 <header><div class="bar"><h1>Klubbshop</h1><button id="cartBtn" type="button">Din beställning<span id="count">0</span></button></div></header>
 <p class="lead">Välj plagg och material, lägg i beställningen och skicka direkt till föreningen.</p>
 <main>
   <div class="chips" id="chips"></div>
   <div class="grid" id="grid"></div>
 </main>
+</div>
 
 <dialog id="prodDlg">
   <div class="dh"><h2 id="pName"></h2><button type="button" id="pClose" aria-label="Stäng">✕</button></div>
@@ -127,9 +143,12 @@ pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px s
 
 <script>
 /* ====== ÄNDRA HÄR ====== */
-const ACCESS_KEY = "2b738197-5132-4f0a-b60b-92df56af113a";
+const EMAILJS_PUBLIC_KEY = "vywZpVyUm-PRw0TS9";   // emailjs.com > Account > General
+const EMAILJS_SERVICE_ID = "service_qq1rwdt";   // emailjs.com > Email Services
+const EMAILJS_TEMPLATE_ID = "template_jg3bkt9"; // emailjs.com > Email Templates
 const MOTTAGARE = "jacobeliasson@hotmail.com";
 const FORENING  = "Skabersjö IF";
+const KLUBBKOD  = "skabersjo2026";   // koden ledarna måste skriva in (versaler spelar ingen roll)
 const KLADSTORLEKAR = ["116","128","140","152","164","S","M","L","XL","XXL"];
 /* Lägg till egen bild med img:"bilder/tröja.jpg". Utan img visas en platshållare. */
 const PRODUKTER = [
@@ -244,11 +263,20 @@ $('make').addEventListener('click', () => {
   $('preview').textContent = text; $('toShow').textContent = MOTTAGARE;
   $('mailBtn').href = 'mailto:' + MOTTAGARE + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(text);
   const btn = $('make'); btn.disabled = true; btn.textContent = 'Skickar…';
-  fetch('https://api.web3forms.com/submit', {
-    method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'},
-    body: JSON.stringify({access_key:ACCESS_KEY, subject, from_name:$('name').value.trim()+' ('+FORENING+')', message:text, botcheck:$('botcheck').checked})
-  }).then(r => r.json()).then(j => {
-    if (!j.success) throw new Error(j.message || 'fel');
+  if ($('botcheck').checked){ btn.disabled = false; btn.textContent = 'Skicka beställning'; return; }
+  const contact = $('contact').value.trim();
+  fetch('https://api.emailjs.com/api/v1.0/email/send', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      service_id: EMAILJS_SERVICE_ID, template_id: EMAILJS_TEMPLATE_ID, user_id: EMAILJS_PUBLIC_KEY,
+      template_params: {
+        subject, order_id: orderId, name: $('name').value.trim(), team: $('team').value.trim(), contact,
+        note: $('note').value.trim() || '–', message: text,
+        reply_to: contact.includes('@') ? contact : MOTTAGARE
+      }
+    })
+  }).then(async r => {
+    if (!r.ok) throw new Error(await r.text() || r.status);
     $('doneId').textContent = orderId; showView('doneView');
   }).catch(e => { $('reason').textContent = 'Felorsak: ' + (e && e.message ? e.message : e); showView('sendView'); })
   .finally(() => { btn.disabled = false; btn.textContent = 'Skicka beställning'; });
@@ -261,6 +289,17 @@ $('copy').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText($('preview').textContent); msg.textContent = 'Kopierat! Klistra in i ett mejl till ' + MOTTAGARE + '.'; }
   catch(e){ const r = document.createRange(); r.selectNodeContents($('preview')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); msg.textContent = 'Texten är markerad – kopiera den manuellt.'; }
 });
+
+function unlock(){ $('gate').hidden = true; $('shop').hidden = false; }
+function tryCode(){
+  if ($('code').value.trim().toLowerCase() === KLUBBKOD.toLowerCase()){
+    try { sessionStorage.setItem('klubbkod','ok'); } catch(e){}
+    unlock();
+  } else { $('codeErr').textContent = 'Fel klubbkod. Fråga föreningen om rätt kod.'; $('code').select(); }
+}
+$('enter').onclick = tryCode;
+$('code').addEventListener('keydown', e => { if (e.key === 'Enter') tryCode(); });
+try { if (sessionStorage.getItem('klubbkod') === 'ok') unlock(); } catch(e){}
 
 renderChips(); update();
 </script>
