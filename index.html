@@ -36,7 +36,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px s
 <body>
 <main>
   <h1>Beställ kläder & material</h1>
-  <p class="lead">Fyll i din beställning och tryck på skicka. Den går direkt till föreningens kansli.</p>
+  <p class="lead">Fyll i din beställning och tryck på skicka. Den skickas direkt till föreningen.</p>
 
   <div id="formView">
     <div class="card">
@@ -65,7 +65,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px s
   <div id="doneView" hidden>
     <div class="card">
       <h2>✅ Tack, beställningen är skickad!</h2>
-      <p style="margin:0 0 12px;color:var(--mute)">Kansliet har fått din beställning.</p>
+      <p style="margin:0 0 12px;color:var(--mute)">Ditt beställnings-ID: <strong id="doneId"></strong></p>
       <button type="button" id="again" class="primary">Gör en ny beställning</button>
     </div>
   </div>
@@ -87,7 +87,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px s
 
 <script>
 /* ====== ÄNDRA HÄR ====== */
-const ACCESS_KEY = "2b738197-5132-4f0a-b60b-92df56af113a";  // från web3forms.com (se instruktion)
+const ACCESS_KEY = "KLISTRA_IN_DIN_WEB3FORMS_NYCKEL";  // från web3forms.com (se instruktion)
 const MOTTAGARE = "jacobeliasson@hotmail.com";   // används bara som reservlösning om utskicket misslyckas
 const FORENING  = "Skabersjö IF";                        // föreningens namn (visas i ämnesraden)
 const KLADSTORLEKAR = ["116","128","140","152","164","S","M","L","XL","XXL"];
@@ -98,6 +98,10 @@ const ARTIKLAR = {
 /* ======================= */
 
 const $ = id => document.getElementById(id);
+function nyttId(){
+  const a = new Uint32Array(1); crypto.getRandomValues(a);
+  return String(a[0] % 100000000).padStart(8,'0');
+}
 let n = 0;
 
 function artikelOptions(){
@@ -172,8 +176,9 @@ $('make').addEventListener('click', () => {
     const sz = r.querySelector('.size');
     if (r.querySelector('.art').value && !sz.hidden && !sz.value){ err.textContent = 'Välj storlek på alla klädesplagg.'; return; }
   }
-  const text = buildText(items);
-  const subject = 'Beställning ' + FORENING + ' – ' + $('team').value.trim();
+  const orderId = nyttId();
+  const text = 'Beställnings-ID: ' + orderId + '\n\n' + buildText(items);
+  const subject = 'Beställning ' + FORENING + ' – ' + $('team').value.trim() + ' – #' + orderId;
   $('preview').textContent = text;
   $('toShow').textContent = MOTTAGARE;
   $('mailBtn').href = 'mailto:' + MOTTAGARE + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(text);
@@ -191,6 +196,7 @@ $('make').addEventListener('click', () => {
     })
   }).then(r => r.json()).then(j => {
     if (!j.success) throw new Error(j.message || 'fel');
+    $('doneId').textContent = orderId;
     $('formView').hidden = true; $('doneView').hidden = false; window.scrollTo(0,0);
   }).catch(() => {
     $('formView').hidden = true; $('sendView').hidden = false; window.scrollTo(0,0);
