@@ -112,6 +112,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px s
     </div>
     <div id="sendView" hidden>
       <h3 style="margin-top:0">Utskicket misslyckades – skicka via mejl istället</h3>
+      <p class="err" id="reason"></p>
       <pre id="preview"></pre>
       <div class="actions">
         <a id="mailBtn" class="btn primary" target="_top" href="#">Öppna i mejlprogram</a>
@@ -126,7 +127,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px s
 
 <script>
 /* ====== ÄNDRA HÄR ====== */
-const ACCESS_KEY = "2b738197-5132-4f0a-b60b-92df56af113aL";
+const ACCESS_KEY = "2b738197-5132-4f0a-b60b-92df56af113a";
 const MOTTAGARE = "jacobeliasson@hotmail.com";
 const FORENING  = "Skabersjö IF";
 const KLADSTORLEKAR = ["116","128","140","152","164","S","M","L","XL","XXL"];
@@ -249,7 +250,7 @@ $('make').addEventListener('click', () => {
   }).then(r => r.json()).then(j => {
     if (!j.success) throw new Error(j.message || 'fel');
     $('doneId').textContent = orderId; showView('doneView');
-  }).catch(() => showView('sendView'))
+  }).catch(e => { $('reason').textContent = 'Felorsak: ' + (e && e.message ? e.message : e); showView('sendView'); })
   .finally(() => { btn.disabled = false; btn.textContent = 'Skicka beställning'; });
 });
 
