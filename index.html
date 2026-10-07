@@ -65,6 +65,7 @@ h3{font-size:1rem;margin:20px 0 10px}
 .err{color:#c0392b;font-size:.9rem;margin:8px 0 0;min-height:1.2em}
 pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;font:.9rem/1.5 ui-monospace,Menlo,monospace;margin:0 0 12px}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
+.tot{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:12px;margin-top:4px;font-size:1.1rem}
 .empty{color:var(--mute);text-align:center;padding:24px 0}
 .gate{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:16px}
 .gate .box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;width:min(380px,100%)}
@@ -96,6 +97,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px s
   <div class="dh"><h2 id="pName"></h2><button type="button" id="pClose" aria-label="Stäng">✕</button></div>
   <div class="db">
     <div class="big" id="pImg"></div>
+    <p id="pPrice" style="margin:0 0 4px;font-weight:700;font-size:1.1rem"></p>
     <p id="pDesc" style="margin:0 0 12px;color:var(--mute)"></p>
     <div id="sizeBox"><label>Storlek</label><div class="sizes" id="sizes"></div></div>
     <label>Antal</label>
@@ -150,24 +152,25 @@ const MOTTAGARE = "jacobeliasson@hotmail.com";
 const FORENING  = "Skabersjö IF";
 const KLUBBKOD  = "skabersjo2026";   // koden ledarna måste skriva in (versaler spelar ingen roll)
 const KLADSTORLEKAR = ["116","128","140","152","164","S","M","L","XL","XXL"];
+/* Priser (price) anges i kronor per styck – ändra till era riktiga. */
 /* Lägg till egen bild med img:"bilder/tröja.jpg". Utan img visas en platshållare. */
 const PRODUKTER = [
-  {id:1,cat:"Kläder",name:"Matchtröja",emoji:"👕",color:"#cfe8d5",desc:"Klubbens matchtröja i andningsbart material."},
-  {id:2,cat:"Kläder",name:"Matchshorts",emoji:"🩳",color:"#d8e4f2",desc:"Matchshorts med resår och dragsko."},
-  {id:3,cat:"Kläder",name:"Matchstrumpor",emoji:"🧦",color:"#f3e3c3",desc:"Strumpor i klubbens färger.",sizes:["28–33","34–38","39–42","43–46"]},
-  {id:4,cat:"Kläder",name:"Träningströja",emoji:"👕",color:"#e4d9f0",desc:"Lätt tröja för träning."},
-  {id:5,cat:"Kläder",name:"Träningsshorts",emoji:"🩳",color:"#f2d6d6",desc:"Shorts för träning."},
-  {id:6,cat:"Kläder",name:"Träningsoverall",emoji:"🧥",color:"#d3e6e8",desc:"Overall för uppvärmning och kyligare dagar."},
-  {id:7,cat:"Kläder",name:"Jacka",emoji:"🧥",color:"#cfd8cf",desc:"Vadderad klubbjacka."},
-  {id:8,cat:"Kläder",name:"Mössa",emoji:"🧢",color:"#f0e0cc",desc:"Varm mössa med klubbmärke.",sizes:["One size"]},
-  {id:9,cat:"Material",name:"Fotboll storlek 3",emoji:"⚽",color:"#e3ecd9",desc:"Till de yngsta lagen."},
-  {id:10,cat:"Material",name:"Fotboll storlek 4",emoji:"⚽",color:"#e3ecd9",desc:"Till mellanåldrarna."},
-  {id:11,cat:"Material",name:"Fotboll storlek 5",emoji:"⚽",color:"#e3ecd9",desc:"Standardboll för 11-mot-11."},
-  {id:12,cat:"Material",name:"Koner",emoji:"🔶",color:"#f5dcc2",desc:"Markeringskoner."},
-  {id:13,cat:"Material",name:"Träningsvästar",emoji:"🦺",color:"#f1efc2",desc:"Väst för lagindelning."},
-  {id:14,cat:"Material",name:"Målvaktshandskar",emoji:"🧤",color:"#d9dff2",desc:"Handskar med grepp.",sizes:["5","6","7","8","9","10"]},
-  {id:15,cat:"Material",name:"Första hjälpen-väska",emoji:"🩹",color:"#f2d3d3",desc:"Väska med grundutrustning."},
-  {id:16,cat:"Material",name:"Bollpump",emoji:"💨",color:"#d6e6ea",desc:"Pump med nål."}
+  {id:1,price:350,cat:"Kläder",name:"Matchtröja",emoji:"👕",color:"#cfe8d5",desc:"Klubbens matchtröja i andningsbart material."},
+  {id:2,price:200,cat:"Kläder",name:"Matchshorts",emoji:"🩳",color:"#d8e4f2",desc:"Matchshorts med resår och dragsko."},
+  {id:3,price:80,cat:"Kläder",name:"Matchstrumpor",emoji:"🧦",color:"#f3e3c3",desc:"Strumpor i klubbens färger.",sizes:["28–33","34–38","39–42","43–46"]},
+  {id:4,price:300,cat:"Kläder",name:"Träningströja",emoji:"👕",color:"#e4d9f0",desc:"Lätt tröja för träning."},
+  {id:5,price:180,cat:"Kläder",name:"Träningsshorts",emoji:"🩳",color:"#f2d6d6",desc:"Shorts för träning."},
+  {id:6,price:600,cat:"Kläder",name:"Träningsoverall",emoji:"🧥",color:"#d3e6e8",desc:"Overall för uppvärmning och kyligare dagar."},
+  {id:7,price:700,cat:"Kläder",name:"Jacka",emoji:"🧥",color:"#cfd8cf",desc:"Vadderad klubbjacka."},
+  {id:8,price:120,cat:"Kläder",name:"Mössa",emoji:"🧢",color:"#f0e0cc",desc:"Varm mössa med klubbmärke.",sizes:["One size"]},
+  {id:9,price:150,cat:"Material",name:"Fotboll storlek 3",emoji:"⚽",color:"#e3ecd9",desc:"Till de yngsta lagen."},
+  {id:10,price:180,cat:"Material",name:"Fotboll storlek 4",emoji:"⚽",color:"#e3ecd9",desc:"Till mellanåldrarna."},
+  {id:11,price:200,cat:"Material",name:"Fotboll storlek 5",emoji:"⚽",color:"#e3ecd9",desc:"Standardboll för 11-mot-11."},
+  {id:12,price:100,cat:"Material",name:"Koner",emoji:"🔶",color:"#f5dcc2",desc:"Markeringskoner."},
+  {id:13,price:250,cat:"Material",name:"Träningsvästar",emoji:"🦺",color:"#f1efc2",desc:"Väst för lagindelning."},
+  {id:14,price:300,cat:"Material",name:"Målvaktshandskar",emoji:"🧤",color:"#d9dff2",desc:"Handskar med grepp.",sizes:["5","6","7","8","9","10"]},
+  {id:15,price:350,cat:"Material",name:"Första hjälpen-väska",emoji:"🩹",color:"#f2d3d3",desc:"Väska med grundutrustning."},
+  {id:16,price:80,cat:"Material",name:"Bollpump",emoji:"💨",color:"#d6e6ea",desc:"Pump med nål."}
 ];
 /* ======================= */
 
@@ -175,6 +178,7 @@ const $ = id => document.getElementById(id);
 const cart = [];           // {pid, size, q}
 let cat = "Alla", cur = null, curSize = "", curQty = 1;
 const sizesOf = p => p.cat === "Kläder" ? (p.sizes || KLADSTORLEKAR) : (p.sizes || []);
+const kr = n => n.toLocaleString('sv-SE') + ' kr';
 const byId = id => PRODUKTER.find(p => p.id === id);
 const art = (p, cls) => p.img ? '<img src="'+p.img+'" alt="'+p.name+'">' : p.emoji;
 
@@ -188,14 +192,14 @@ $('chips').addEventListener('click', e => { const c = e.target.dataset.c; if (c)
 function renderGrid(){
   $('grid').innerHTML = PRODUKTER.filter(p => cat === "Alla" || p.cat === cat).map(p => {
     const n = cart.filter(i => i.pid === p.id).reduce((s,i) => s+i.q, 0);
-    return '<button type="button" class="p" data-id="'+p.id+'"><div class="ph" style="background:'+p.color+'">'+art(p)+(p.img?'':'<small>Bild kommer</small>')+(n?'<span class="tag">'+n+' i beställning</span>':'')+'</div><div class="pi"><b>'+p.name+'</b><span>'+p.cat+'</span></div></button>';
+    return '<button type="button" class="p" data-id="'+p.id+'"><div class="ph" style="background:'+p.color+'">'+art(p)+(p.img?'':'<small>Bild kommer</small>')+(n?'<span class="tag">'+n+' i beställning</span>':'')+'</div><div class="pi"><b>'+p.name+'</b><span>'+p.cat+' · '+kr(p.price)+'</span></div></button>';
   }).join('');
 }
 $('grid').addEventListener('click', e => { const b = e.target.closest('.p'); if (b) openProd(byId(+b.dataset.id)); });
 
 function openProd(p){
   cur = p; curSize = ""; curQty = 1;
-  $('pName').textContent = p.name; $('pDesc').textContent = p.desc;
+  $('pName').textContent = p.name; $('pDesc').textContent = p.desc; $('pPrice').textContent = kr(p.price);
   const im = $('pImg'); im.style.background = p.color; im.innerHTML = art(p);
   const s = sizesOf(p);
   $('sizeBox').hidden = !s.length;
@@ -224,13 +228,30 @@ function update(){
   renderGrid(); renderCart();
 }
 
+const total = () => cart.reduce((s,i) => s + i.q*byId(i.pid).price, 0);
+function itemsText(){
+  const W = 40, line = '-'.repeat(W);
+  const rows = cart.map(i => { const p = byId(i.pid), l = i.q + ' st × ' + kr(p.price), r = kr(i.q*p.price);
+    return p.name + (i.size ? ', stl ' + i.size : '') + '\n  ' + l + ' '.repeat(Math.max(2, W-2-l.length-r.length)) + r; });
+  const t = 'Totalt', tv = kr(total());
+  return line + '\n' + rows.join('\n\n') + '\n' + line + '\n' + t + ' '.repeat(Math.max(2, W-t.length-tv.length)) + tv;
+}
+function itemsHtml(){
+  const td = 'padding:10px 8px;border-bottom:1px solid #e3e3e3;', th = 'padding:8px;border-bottom:2px solid #222;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#555;';
+  const rows = cart.map(i => { const p = byId(i.pid);
+    return '<tr><td style="'+td+'">'+i.q+' st</td><td style="'+td+'">'+p.name+'</td><td style="'+td+'">'+(i.size||'–')+'</td><td style="'+td+'text-align:right;white-space:nowrap">'+kr(p.price)+'</td><td style="'+td+'text-align:right;white-space:nowrap">'+kr(i.q*p.price)+'</td></tr>'; }).join('');
+  return '<table style="width:100%;max-width:560px;border-collapse:collapse;font:14px Arial,Helvetica,sans-serif;color:#111">'+
+    '<thead><tr><th style="'+th+'text-align:left">Antal</th><th style="'+th+'text-align:left">Artikel</th><th style="'+th+'text-align:left">Storlek</th><th style="'+th+'text-align:right">À-pris</th><th style="'+th+'text-align:right">Summa</th></tr></thead>'+
+    '<tbody>'+rows+'</tbody>'+
+    '<tfoot><tr><td colspan="4" style="padding:12px 8px;text-align:right;font-weight:700;font-size:16px">Totalt</td><td style="padding:12px 8px;text-align:right;font-weight:700;font-size:16px;white-space:nowrap">'+kr(total())+'</td></tr></tfoot></table>';
+}
 function renderCart(){
   const box = $('items');
   if (!cart.length){ box.innerHTML = '<p class="empty">Din beställning är tom. Välj något i shopen.</p>'; $('formBox').hidden = true; return; }
   $('formBox').hidden = false;
   box.innerHTML = cart.map((i,k) => { const p = byId(i.pid);
-    return '<div class="ci"><div class="th" style="background:'+p.color+'">'+art(p)+'</div><div><b>'+p.name+'</b><small>'+(i.size?'Storlek '+i.size:'&nbsp;')+'</small><button type="button" class="rm" data-k="'+k+'" data-a="rm">Ta bort</button></div><div class="qty"><button type="button" data-k="'+k+'" data-a="-" aria-label="Minska">−</button><span>'+i.q+'</span><button type="button" data-k="'+k+'" data-a="+" aria-label="Öka">+</button></div></div>';
-  }).join('');
+    return '<div class="ci"><div class="th" style="background:'+p.color+'">'+art(p)+'</div><div><b>'+p.name+'</b><small>'+(i.size?'Storlek '+i.size+' · ':'')+kr(p.price)+'/st</small><button type="button" class="rm" data-k="'+k+'" data-a="rm">Ta bort</button></div><div class="qty"><button type="button" data-k="'+k+'" data-a="-" aria-label="Minska">−</button><span>'+i.q+'</span><button type="button" data-k="'+k+'" data-a="+" aria-label="Öka">+</button></div></div>';
+  }).join('') + '<div class="tot"><span>Totalt</span><b>'+kr(total())+'</b></div>';
 }
 $('items').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
@@ -247,7 +268,7 @@ $('cClose').onclick = () => $('cartDlg').close();
 
 function buildText(){
   const L = ['Beställning från ' + $('name').value.trim(), 'Lag/grupp: ' + $('team').value.trim(), 'Kontakt: ' + $('contact').value.trim(), '', 'Artiklar:'];
-  cart.forEach(i => L.push('- ' + i.q + ' st ' + byId(i.pid).name + (i.size ? ', stl ' + i.size : '')));
+  L.push(itemsText());
   const note = $('note').value.trim();
   if (note) L.push('', 'Kommentar: ' + note);
   return L.join('\n');
@@ -271,7 +292,7 @@ $('make').addEventListener('click', () => {
       service_id: EMAILJS_SERVICE_ID, template_id: EMAILJS_TEMPLATE_ID, user_id: EMAILJS_PUBLIC_KEY,
       template_params: {
         subject, order_id: orderId, name: $('name').value.trim(), team: $('team').value.trim(), contact,
-        note: $('note').value.trim() || '–', message: text,
+        note: $('note').value.trim() || '–', message: itemsHtml(), message_text: itemsText(),
         reply_to: contact.includes('@') ? contact : MOTTAGARE
       }
     })
