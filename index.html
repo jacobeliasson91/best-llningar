@@ -150,6 +150,8 @@ const EMAILJS_SERVICE_ID = "service_qq1rwdt";   // emailjs.com > Email Services
 const EMAILJS_TEMPLATE_ID = "template_jg3bkt9"; // emailjs.com > Email Templates
 const MOTTAGARE = "jacobeliasson@hotmail.com";
 const FORENING  = "Skabersjö IF";
+const SUPABASE_URL = "https://sjuwuhgbqzdwmtslljti.supabase.co";      // t.ex. https://abcdxyz.supabase.co  (Project Settings > API)
+const SUPABASE_ANON_KEY = "sb_publishable_yRmBBnp4TYRmcA8jIQmNDw_vpWWkEdI"; // "anon public"/"publishable" nyckel – den är avsedd att vara publik
 const KLUBBKOD  = "skabersjo2026";   // koden ledarna måste skriva in (versaler spelar ingen roll)
 const KLADSTORLEKAR = ["116","128","140","152","164","S","M","L","XL","XXL"];
 /* Priser (price) anges i kronor per styck – ändra till era riktiga. */
@@ -286,7 +288,7 @@ $('make').addEventListener('click', () => {
   const btn = $('make'); btn.disabled = true; btn.textContent = 'Skickar…';
   if ($('botcheck').checked){ btn.disabled = false; btn.textContent = 'Skicka beställning'; return; }
   const contact = $('contact').value.trim();
-  fetch('https://api.emailjs.com/api/v1.0/email/send', {
+  const mail = fetch('https://api.emailjs.com/api/v1.0/email/send', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
       service_id: EMAILJS_SERVICE_ID, template_id: EMAILJS_TEMPLATE_ID, user_id: EMAILJS_PUBLIC_KEY,
@@ -296,12 +298,22 @@ $('make').addEventListener('click', () => {
         reply_to: contact.includes('@') ? contact : MOTTAGARE
       }
     })
-  }).then(async r => {
-    if (!r.ok) throw new Error(await r.text() || r.status);
-    $('doneId').textContent = orderId; showView('doneView');
-  }).catch(e => { $('reason').textContent = 'Felorsak: ' + (e && e.message ? e.message : e); showView('sendView'); })
-  .finally(() => { btn.disabled = false; btn.textContent = 'Skicka beställning'; });
+  }).then(async r => { if (!r.ok) throw new Error(await r.text() || r.status); });
+  Promise.allSettled([sparaDb(orderId, contact), mail]).then(([d, m]) => {
+    if (d.status === 'fulfilled' || m.status === 'fulfilled'){ $('doneId').textContent = orderId; showView('doneView'); }
+    else { const e = m.reason; $('reason').textContent = 'Felorsak: ' + (e && e.message ? e.message : e); showView('sendView'); }
+  }).finally(() => { btn.disabled = false; btn.textContent = 'Skicka beställning'; });
 });
+
+/* Sparar beställningen i databasen (Supabase) så att den syns i rapporterna i admin.html */
+function sparaDb(orderId, contact){
+  if (!SUPABASE_URL) return Promise.reject(new Error('Databas ej konfigurerad'));
+  const order = {order_no:orderId, name:$('name').value.trim(), team:$('team').value.trim(), contact, note:$('note').value.trim(),
+    items: cart.map(i => { const p = byId(i.pid); return {product_id:p.id, product_name:p.name, category:p.cat, size:i.size, qty:i.q, unit_price:p.price}; })};
+  return fetch(SUPABASE_URL + '/rest/v1/rpc/place_order', {
+    method:'POST', headers:{'Content-Type':'application/json', apikey:SUPABASE_ANON_KEY}, body: JSON.stringify({p:order})
+  }).then(async r => { if (!r.ok) throw new Error(await r.text()); });
+}
 
 $('again').onclick = () => location.reload();
 $('back').onclick = () => showView('cartView');
