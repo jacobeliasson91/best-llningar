@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Beställning – Klubbmaterial</title>
+<style>
+:root{--bg:#f4f6f3;--card:#fff;--ink:#17231a;--mute:#5d6b60;--line:#d8dfd9;--accent:#1f7a3d;--accent-ink:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111812;--card:#1a241c;--ink:#e8efe9;--mute:#9fb0a2;--line:#2e3b30;--accent:#3fae65;--accent-ink:#06130a}}
+:root[data-theme="dark"]{--bg:#111812;--card:#1a241c;--ink:#e8efe9;--mute:#9fb0a2;--line:#2e3b30;--accent:#3fae65;--accent-ink:#06130a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:640px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.5rem;margin:0 0 4px}
+p.lead{color:var(--mute);margin:0 0 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+h2{font-size:1rem;margin:0 0 12px}
+label{display:block;font-size:.85rem;color:var(--mute);margin-bottom:4px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
+.field{margin-bottom:12px}
+.row{display:grid;grid-template-columns:1fr;gap:8px;padding:12px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0;padding-top:0}
+.sub{display:grid;grid-template-columns:1fr 90px auto;gap:8px;align-items:end}
+button{font:inherit;cursor:pointer;border-radius:8px;padding:10px 14px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+button.primary,a.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+a.primary{display:inline-block;text-decoration:none;padding:10px 14px;border-radius:8px}
+.rm{padding:10px 12px}
+.err{color:#c0392b;font-size:.9rem;margin:8px 0 0;min-height:1.2em}
+pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;font:.9rem/1.5 ui-monospace,Menlo,monospace;margin:0 0 12px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <h1>Beställ kläder & material</h1>
+  <p class="lead">Fyll i din beställning och tryck på skicka. Den går direkt till föreningens kansli.</p>
+
+  <div id="formView">
+    <div class="card">
+      <h2>Om dig</h2>
+      <div class="field"><label for="name">Ditt namn</label><input id="name" autocomplete="name"></div>
+      <div class="field"><label for="team">Lag / grupp</label><input id="team" placeholder="t.ex. P12, F10"></div>
+      <div class="field" style="margin:0"><label for="contact">Telefon eller e-post</label><input id="contact" autocomplete="email"></div>
+    </div>
+
+    <div class="card">
+      <h2>Din beställning</h2>
+      <div id="lines"></div>
+      <button type="button" id="add">+ Lägg till artikel</button>
+    </div>
+
+    <div class="card">
+      <h2>Övrigt</h2>
+      <div class="field" style="margin:0"><label for="note">Kommentar (valfritt)</label><textarea id="note" rows="3" placeholder="Önskad leverans, tryck, färg m.m."></textarea></div>
+    </div>
+
+    <input type="checkbox" id="botcheck" tabindex="-1" autocomplete="off" style="display:none">
+    <button type="button" id="make" class="primary" style="width:100%">Skicka beställning</button>
+    <p class="err" id="err" role="alert"></p>
+  </div>
+
+  <div id="doneView" hidden>
+    <div class="card">
+      <h2>✅ Tack, beställningen är skickad!</h2>
+      <p style="margin:0 0 12px;color:var(--mute)">Kansliet har fått din beställning.</p>
+      <button type="button" id="again" class="primary">Gör en ny beställning</button>
+    </div>
+  </div>
+
+  <div id="sendView" hidden>
+    <div class="card">
+      <h2>Utskicket misslyckades – skicka via mejl istället</h2>
+      <pre id="preview"></pre>
+      <div class="actions">
+        <a id="mailBtn" class="primary" target="_top" href="#">Öppna i mejlprogram</a>
+        <button type="button" id="copy">Kopiera text</button>
+        <button type="button" id="back">Ändra</button>
+      </div>
+      <p class="err" id="copyMsg" style="color:var(--mute)"></p>
+      <p style="color:var(--mute);font-size:.9rem;margin:8px 0 0">Mejlet skickas till <strong id="toShow"></strong>. Din beställning är sparad i texten ovan – öppna den i mejlprogrammet eller kopiera den.</p>
+    </div>
+  </div>
+</main>
+
+<script>
+/* ====== ÄNDRA HÄR ====== */
+const ACCESS_KEY = "2b738197-5132-4f0a-b60b-92df56af113a";  // från web3forms.com (se instruktion)
+const MOTTAGARE = "jacobeliasson@hotmail.com";   // används bara som reservlösning om utskicket misslyckas
+const FORENING  = "Skabersjö IF";                        // föreningens namn (visas i ämnesraden)
+const KLADSTORLEKAR = ["116","128","140","152","164","S","M","L","XL","XXL"];
+const ARTIKLAR = {
+  "Kläder": ["Matchtröja","Matchshorts","Matchstrumpor","Träningströja","Träningsshorts","Träningsoverall","Jacka","Mössa"],
+  "Material": ["Fotboll storlek 3","Fotboll storlek 4","Fotboll storlek 5","Koner","Träningsvästar","Målvaktshandskar","Första hjälpen-väska","Bollpump"]
+};
+/* ======================= */
+
+const $ = id => document.getElementById(id);
+let n = 0;
+
+function artikelOptions(){
+  let h = '<option value="">Välj artikel…</option>';
+  for (const [grp, list] of Object.entries(ARTIKLAR)){
+    h += '<optgroup label="'+grp+'">' + list.map(a => '<option data-grp="'+grp+'">'+a+'</option>').join('') + '</optgroup>';
+  }
+  return h;
+}
+
+function addLine(){
+  n++;
+  const d = document.createElement('div');
+  d.className = 'row';
+  d.innerHTML =
+    '<select class="art" aria-label="Artikel">'+artikelOptions()+'</select>'+
+    '<div class="sub">'+
+      '<select class="size" aria-label="Storlek" hidden>'+
+        '<option value="">Storlek…</option>'+KLADSTORLEKAR.map(s=>'<option>'+s+'</option>').join('')+
+      '</select>'+
+      '<input class="qty" type="number" min="1" value="1" inputmode="numeric" aria-label="Antal">'+
+      '<button type="button" class="rm" aria-label="Ta bort rad">✕</button>'+
+    '</div>';
+  const art = d.querySelector('.art'), size = d.querySelector('.size');
+  art.addEventListener('change', () => {
+    const grp = art.selectedOptions[0] && art.selectedOptions[0].dataset.grp;
+    size.hidden = grp !== 'Kläder';
+    if (size.hidden) size.value = '';
+  });
+  d.querySelector('.rm').addEventListener('click', () => {
+    if ($('lines').children.length > 1) d.remove(); else { art.value=''; size.hidden=true; size.value=''; d.querySelector('.qty').value=1; }
+  });
+  $('lines').appendChild(d);
+}
+
+function collect(){
+  const items = [];
+  for (const r of $('lines').children){
+    const a = r.querySelector('.art').value;
+    if (!a) continue;
+    const sizeEl = r.querySelector('.size');
+    items.push({a, s: sizeEl.hidden ? '' : sizeEl.value, q: parseInt(r.querySelector('.qty').value,10) || 0});
+  }
+  return items;
+}
+
+function buildText(items){
+  const L = [];
+  L.push('Beställning från ' + $('name').value.trim());
+  L.push('Lag/grupp: ' + $('team').value.trim());
+  L.push('Kontakt: ' + $('contact').value.trim());
+  L.push('');
+  L.push('Artiklar:');
+  items.forEach(i => L.push('- ' + i.q + ' st ' + i.a + (i.s ? ', stl ' + i.s : '')));
+  const note = $('note').value.trim();
+  if (note){ L.push(''); L.push('Kommentar: ' + note); }
+  return L.join('\n');
+}
+
+$('add').addEventListener('click', addLine);
+
+$('make').addEventListener('click', () => {
+  const err = $('err'); err.textContent = '';
+  if (!$('name').value.trim() || !$('team').value.trim() || !$('contact').value.trim()){
+    err.textContent = 'Fyll i namn, lag och kontaktuppgift.'; return;
+  }
+  const items = collect();
+  if (!items.length){ err.textContent = 'Välj minst en artikel.'; return; }
+  if (items.some(i => i.q < 1)){ err.textContent = 'Antal måste vara minst 1.'; return; }
+  if (items.some(i => i.s === '' && document.querySelector('.size:not([hidden])') && false)){ return; }
+  for (const r of $('lines').children){
+    const sz = r.querySelector('.size');
+    if (r.querySelector('.art').value && !sz.hidden && !sz.value){ err.textContent = 'Välj storlek på alla klädesplagg.'; return; }
+  }
+  const text = buildText(items);
+  const subject = 'Beställning ' + FORENING + ' – ' + $('team').value.trim();
+  $('preview').textContent = text;
+  $('toShow').textContent = MOTTAGARE;
+  $('mailBtn').href = 'mailto:' + MOTTAGARE + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(text);
+
+  const btn = $('make'); btn.disabled = true; btn.textContent = 'Skickar…';
+  fetch('https://api.web3forms.com/submit', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json', 'Accept':'application/json'},
+    body: JSON.stringify({
+      access_key: ACCESS_KEY,
+      subject: subject,
+      from_name: $('name').value.trim() + ' (' + FORENING + ')',
+      message: text,
+      botcheck: $('botcheck').checked
+    })
+  }).then(r => r.json()).then(j => {
+    if (!j.success) throw new Error(j.message || 'fel');
+    $('formView').hidden = true; $('doneView').hidden = false; window.scrollTo(0,0);
+  }).catch(() => {
+    $('formView').hidden = true; $('sendView').hidden = false; window.scrollTo(0,0);
+  }).finally(() => { btn.disabled = false; btn.textContent = 'Skicka beställning'; });
+});
+
+$('again').addEventListener('click', () => location.reload());
+
+$('back').addEventListener('click', () => { $('sendView').hidden = true; $('formView').hidden = false; });
+
+$('copy').addEventListener('click', async () => {
+  const msg = $('copyMsg');
+  try { await navigator.clipboard.writeText($('preview').textContent); msg.textContent = 'Kopierat! Klistra in i ett mejl till ' + MOTTAGARE + '.'; }
+  catch(e){
+    const r = document.createRange(); r.selectNodeContents($('preview'));
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    msg.textContent = 'Texten är markerad – kopiera den manuellt.';
+  }
+});
+
+addLine();
+</script>
+</body>
+</html>
