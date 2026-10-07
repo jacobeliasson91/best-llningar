@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Orderstatus – Skabersjö IF</title>
+<style>
+:root{--bg:#f3f5f1;--card:#fff;--ink:#16221a;--mute:#5d6b60;--line:#d9e0da;--accent:#1f7a3d;--accent-ink:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101811;--card:#192319;--ink:#e8efe9;--mute:#9fb0a2;--line:#2c3a2e;--accent:#3fae65;--accent-ink:#06130a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:640px;margin:0 auto;padding:16px 16px 48px}
+h1{font-size:1.25rem;margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.m{color:var(--mute)}.ok{color:var(--accent);font-weight:600}.err{color:#c0392b}
+dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px}dt{color:var(--mute)}dd{margin:0;overflow-wrap:anywhere}
+.it{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.it:last-child{border:0}.it input{width:24px;height:24px;flex:none;accent-color:var(--accent)}.it b{display:block}
+button{font:inherit;cursor:pointer;border-radius:8px;padding:12px 16px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;width:100%}
+button:disabled{opacity:.5;cursor:default}
+</style>
+</head>
+<body>
+<main>
+  <h1>Orderstatus</h1>
+  <p id="msg" class="m">Hämtar beställningen…</p>
+  <div id="order" hidden>
+    <div class="card"><dl id="info"></dl></div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <b>Klart för upphämtning</b><button type="button" id="all">Markera alla</button></div>
+      <div id="items"></div>
+    </div>
+    <button type="button" id="save" class="primary" disabled>Uppdatera orderstatus</button>
+    <p id="res" role="status"></p>
+    <button type="button" id="retry" hidden>Försök skicka mejlet igen</button>
+  </div>
+</main>
+
+<script>
+/* ====== Samma värden som i index.html ====== */
+const SUPABASE_URL = "https://sjuwuhgbqzdwmtslljti.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_yRmBBnp4TYRmcA8jIQmNDw_vpWWkEdI";
+const EMAILJS_PUBLIC_KEY = "vywZpVyUm-PRw0TS9";
+const EMAILJS_SERVICE_ID = "service_qq1rwdt";
+const EMAILJS_STATUS_TEMPLATE_ID = "template_s3ftyg9";   // <-- ID på den NYA mejlmallen för orderstatus (emailjs.com > Email Templates)
+const MOTTAGARE = "jacobeliasson@hotmail.com";   // kansliets mejl (får kopia)
+const FORENING = "Skabersjö IF";
+const UPPHAMTNING = "";   // valfri rad i mejlet, t.ex. "Hämtas hos Sportbutiken, Storgatan 1, vardagar 10–17."
+/* =========================================== */
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const q = new URLSearchParams(location.search), O = q.get('o') || '', K = q.get('k') || '';
+let order = null, saved = '';   // saved = ikryssade artiklar (id) som senast sparats
+
+const rpc = (fn, args) => fetch(SUPABASE_URL + '/rest/v1/rpc/' + fn, {
+  method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY }, body: JSON.stringify(args)
+}).then(async r => { if (!r.ok) throw new Error(await r.text()); return r.json(); });
+
+const label = i => i.qty + ' st – ' + i.name + (i.size ? ' (' + i.size + ')' : '');
+const checked = () => [...document.querySelectorAll('#items input:checked')].map(x => +x.value);
+const key = a => a.slice().sort((x, y) => x - y).join(',');
+
+function show(o){
+  order = o; $('msg').hidden = true; $('order').hidden = false;
+  const d = new Date(o.created_at).toLocaleDateString('sv-SE');
+  $('info').innerHTML = '<dt>Order</dt><dd>#' + esc(o.order_no) + '</dd><dt>Lagd</dt><dd>' + d + '</dd><dt>Från</dt><dd>' + esc(o.name) + ', ' + esc(o.team) + '</dd><dt>Kontakt</dt><dd>' + esc(o.contact) + '</dd>' + (o.note ? '<dt>Kommentar</dt><dd>' + esc(o.note) + '</dd>' : '');
+  $('items').innerHTML = o.items.map(i => '<label class="it"><input type="checkbox" value="' + i.id + '"' + (i.ready ? ' checked' : '') + '><span><b>' + esc(label(i)) + '</b><span class="m">' + (i.qty * i.price).toLocaleString('sv-SE') + ' kr</span></span></label>').join('');
+  saved = key(o.items.filter(i => i.ready).map(i => i.id)); changed();
+}
+function changed(){ $('save').disabled = key(checked()) === saved; }
+$('items').addEventListener('change', changed);
+$('all').onclick = () => { const b = [...document.querySelectorAll('#items input')], on = b.some(x => !x.checked); b.forEach(x => x.checked = on); changed(); };
+
+function mailBody(){
+  const ready = order.items.filter(i => i.ready), rest = order.items.filter(i => !i.ready), li = a => '<ul>' + a.map(i => '<li>' + esc(label(i)) + '</li>').join('') + '</ul>';
+  return '<p>Hej ' + esc(order.name) + '!</p>' + (rest.length
+    ? '<p>Del av din beställning (#' + esc(order.order_no) + ') är nu klar för upphämtning:</p>' + li(ready) + '<p>Ännu inte klart:</p>' + li(rest)
+    : '<p>Hela din beställning (#' + esc(order.order_no) + ') är nu klar för upphämtning:</p>' + li(ready))
+    + (UPPHAMTNING ? '<p>' + esc(UPPHAMTNING) + '</p>' : '') + '<p>Vänliga hälsningar<br>' + FORENING + '</p>';
+}
+function sendMail(){
+  if (!EMAILJS_STATUS_TEMPLATE_ID) return Promise.reject(new Error('Mejlmallen är inte inställd i handlare.html'));
+  const email = /^\S+@\S+\.\S+$/.test(order.contact) ? order.contact : MOTTAGARE;
+  return fetch('https://api.emailjs.com/api/v1.0/email/send', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ service_id: EMAILJS_SERVICE_ID, template_id: EMAILJS_STATUS_TEMPLATE_ID, user_id: EMAILJS_PUBLIC_KEY,
+      template_params: { to_email: email, cc_email: email === MOTTAGARE ? '' : MOTTAGARE, reply_to: MOTTAGARE, name: order.name, order_id: order.order_no,
+        subject: FORENING + ' – din beställning #' + order.order_no + (order.items.every(i => i.ready) ? ' är klar för upphämtning' : ': delar klara för upphämtning'), message: mailBody() } })
+  }).then(async r => { if (!r.ok) throw new Error(await r.text() || r.status); });
+}
+function mailDone(){ $('retry').hidden = true; $('res').className = 'ok'; $('res').textContent = 'Status sparad och mejl skickat till ' + order.name + ' och kansliet.'; }
+function mailFail(e){ $('res').className = 'err'; $('res').textContent = 'Status är sparad, men mejlet kunde inte skickas: ' + (e.message || e); $('retry').hidden = false; }
+
+$('save').onclick = async () => {
+  const b = $('save'); b.disabled = true; b.textContent = 'Sparar…'; $('res').textContent = ''; $('retry').hidden = true;
+  try { show(await rpc('dealer_set_ready', { p_order: O, p_token: K, p_ready: checked() })); }
+  catch (e) { $('res').className = 'err'; $('res').textContent = 'Kunde inte spara: ' + (e.message || e); b.textContent = 'Uppdatera orderstatus'; changed(); return; }
+  b.textContent = 'Uppdatera orderstatus';
+  if (!order.items.some(i => i.ready)){ $('res').className = 'm'; $('res').textContent = 'Sparat. Inget är markerat som klart, så inget mejl skickades.'; return; }
+  try { await sendMail(); mailDone(); } catch (e) { mailFail(e); }
+};
+$('retry').onclick = () => sendMail().then(mailDone, mailFail);
+
+(async () => {
+  try { const o = await rpc('dealer_order', { p_order: O, p_token: K }); if (!o) throw 0; show(o); }
+  catch (e) { $('msg').className = 'err'; $('msg').textContent = 'Hittar inte beställningen. Kontrollera att du öppnar hela länken från mejlet.'; }
+})();
+</script>
+</body>
+</html>
