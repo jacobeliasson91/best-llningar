@@ -3,221 +3,265 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Beställning – Klubbmaterial</title>
+<title>Klubbshop – Skabersjö IF</title>
 <style>
-:root{--bg:#f4f6f3;--card:#fff;--ink:#17231a;--mute:#5d6b60;--line:#d8dfd9;--accent:#1f7a3d;--accent-ink:#fff;
+:root{--bg:#f3f5f1;--card:#fff;--ink:#16221a;--mute:#5d6b60;--line:#d9e0da;--accent:#1f7a3d;--accent-ink:#fff;--shade:rgba(10,20,12,.5);
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111812;--card:#1a241c;--ink:#e8efe9;--mute:#9fb0a2;--line:#2e3b30;--accent:#3fae65;--accent-ink:#06130a}}
-:root[data-theme="dark"]{--bg:#111812;--card:#1a241c;--ink:#e8efe9;--mute:#9fb0a2;--line:#2e3b30;--accent:#3fae65;--accent-ink:#06130a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101811;--card:#192319;--ink:#e8efe9;--mute:#9fb0a2;--line:#2c3a2e;--accent:#3fae65;--accent-ink:#06130a}}
+:root[data-theme="dark"]{--bg:#101811;--card:#192319;--ink:#e8efe9;--mute:#9fb0a2;--line:#2c3a2e;--accent:#3fae65;--accent-ink:#06130a}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-main{max-width:640px;margin:0 auto;padding:20px 16px 48px}
-h1{font-size:1.5rem;margin:0 0 4px}
-p.lead{color:var(--mute);margin:0 0 20px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
-h2{font-size:1rem;margin:0 0 12px}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar{max-width:1100px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font-size:1.25rem;margin:0;letter-spacing:-.01em}
+.lead{max-width:1100px;margin:0 auto;padding:16px 16px 0;color:var(--mute)}
+main{max-width:1100px;margin:0 auto;padding:12px 16px 48px}
+button,a.btn{font:inherit;cursor:pointer;border-radius:8px;padding:10px 14px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.p:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+a.btn{display:inline-block;text-decoration:none}
+#cartBtn{position:relative}
+#count{background:var(--accent);color:var(--accent-ink);border-radius:99px;font-size:.75rem;padding:1px 7px;margin-left:6px;font-weight:700}
+.chips{display:flex;gap:8px;margin:8px 0 16px;overflow-x:auto}
+.chip{border-radius:99px;white-space:nowrap}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr);gap:16px}}
+@media(min-width:900px){.grid{grid-template-columns:repeat(4,1fr)}}
+.p{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;text-align:left;padding:0}
+.p:hover{border-color:var(--accent)}
+.ph{aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative}
+.ph img{width:100%;height:100%;object-fit:cover}
+.ph small{position:absolute;bottom:8px;left:10px;font-size:.7rem;color:var(--mute)}
+.pi{padding:10px 12px 12px}
+.pi b{display:block;font-weight:600}
+.pi span{color:var(--mute);font-size:.85rem}
+.tag{position:absolute;top:8px;right:8px;background:var(--accent);color:var(--accent-ink);border-radius:99px;font-size:.75rem;padding:2px 8px;font-weight:700}
+dialog{border:0;padding:0;background:var(--card);color:var(--ink);border-radius:14px;width:min(520px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto}
+dialog::backdrop{background:var(--shade)}
+.dh{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card)}
+.dh h2{margin:0;font-size:1.1rem}
+.db{padding:16px}
+.big{aspect-ratio:4/3;border-radius:10px;font-size:5rem;display:flex;align-items:center;justify-content:center;margin-bottom:14px;overflow:hidden}
+.big img{width:100%;height:100%;object-fit:cover}
+.sizes{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px}
+.sz{min-width:52px;text-align:center}
+.sz[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 label{display:block;font-size:.85rem;color:var(--mute);margin-bottom:4px}
 input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
 .field{margin-bottom:12px}
-.row{display:grid;grid-template-columns:1fr;gap:8px;padding:12px 0;border-top:1px solid var(--line)}
-.row:first-of-type{border-top:0;padding-top:0}
-.sub{display:grid;grid-template-columns:1fr 90px auto;gap:8px;align-items:end}
-button{font:inherit;cursor:pointer;border-radius:8px;padding:10px 14px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
-button.primary,a.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
-a.primary{display:inline-block;text-decoration:none;padding:10px 14px;border-radius:8px}
-.rm{padding:10px 12px}
+.qty{display:inline-flex;align-items:center;gap:4px}
+.qty button{padding:6px 12px}
+.qty span{min-width:28px;text-align:center}
+.ci{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.ci:first-child{border-top:0}
+.th{width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;overflow:hidden}
+.th img{width:100%;height:100%;object-fit:cover}
+.ci small{color:var(--mute);display:block}
+.rm{border:0;background:none;color:var(--mute);padding:4px 0;font-size:.85rem;text-decoration:underline}
+h3{font-size:1rem;margin:20px 0 10px}
 .err{color:#c0392b;font-size:.9rem;margin:8px 0 0;min-height:1.2em}
 pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;font:.9rem/1.5 ui-monospace,Menlo,monospace;margin:0 0 12px}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
+.empty{color:var(--mute);text-align:center;padding:24px 0}
 [hidden]{display:none!important}
 </style>
 </head>
 <body>
+<header><div class="bar"><h1>Klubbshop</h1><button id="cartBtn" type="button">Din beställning<span id="count">0</span></button></div></header>
+<p class="lead">Välj plagg och material, lägg i beställningen och skicka direkt till föreningen.</p>
 <main>
-  <h1>Beställ kläder & material</h1>
-  <p class="lead">Fyll i din beställning och tryck på skicka. Den skickas direkt till föreningen.</p>
+  <div class="chips" id="chips"></div>
+  <div class="grid" id="grid"></div>
+</main>
 
-  <div id="formView">
-    <div class="card">
-      <h2>Om dig</h2>
-      <div class="field"><label for="name">Ditt namn</label><input id="name" autocomplete="name"></div>
-      <div class="field"><label for="team">Lag / grupp</label><input id="team" placeholder="t.ex. P12, F10"></div>
-      <div class="field" style="margin:0"><label for="contact">Telefon eller e-post</label><input id="contact" autocomplete="email"></div>
-    </div>
-
-    <div class="card">
-      <h2>Din beställning</h2>
-      <div id="lines"></div>
-      <button type="button" id="add">+ Lägg till artikel</button>
-    </div>
-
-    <div class="card">
-      <h2>Övrigt</h2>
-      <div class="field" style="margin:0"><label for="note">Kommentar (valfritt)</label><textarea id="note" rows="3" placeholder="Önskad leverans, tryck, färg m.m."></textarea></div>
-    </div>
-
-    <input type="checkbox" id="botcheck" tabindex="-1" autocomplete="off" style="display:none">
-    <button type="button" id="make" class="primary" style="width:100%">Skicka beställning</button>
-    <p class="err" id="err" role="alert"></p>
+<dialog id="prodDlg">
+  <div class="dh"><h2 id="pName"></h2><button type="button" id="pClose" aria-label="Stäng">✕</button></div>
+  <div class="db">
+    <div class="big" id="pImg"></div>
+    <p id="pDesc" style="margin:0 0 12px;color:var(--mute)"></p>
+    <div id="sizeBox"><label>Storlek</label><div class="sizes" id="sizes"></div></div>
+    <label>Antal</label>
+    <div class="qty" style="margin-bottom:14px"><button type="button" id="pMinus" aria-label="Minska">−</button><span id="pQty">1</span><button type="button" id="pPlus" aria-label="Öka">+</button></div>
+    <p class="err" id="pErr" role="alert"></p>
+    <button type="button" class="primary" id="pAdd" style="width:100%">Lägg i beställningen</button>
   </div>
+</dialog>
 
-  <div id="doneView" hidden>
-    <div class="card">
-      <h2>✅ Tack, beställningen är skickad!</h2>
-      <p style="margin:0 0 12px;color:var(--mute)">Ditt beställnings-ID: <strong id="doneId"></strong></p>
+<dialog id="cartDlg">
+  <div class="dh"><h2 id="cTitle">Din beställning</h2><button type="button" id="cClose" aria-label="Stäng">✕</button></div>
+  <div class="db">
+    <div id="cartView">
+      <div id="items"></div>
+      <div id="formBox">
+        <h3>Om dig</h3>
+        <div class="field"><label for="name">Ditt namn</label><input id="name" autocomplete="name"></div>
+        <div class="field"><label for="team">Lag / grupp</label><input id="team" placeholder="t.ex. P-14, F-15"></div>
+        <div class="field"><label for="contact">Telefon eller e-post</label><input id="contact" autocomplete="email"></div>
+        <div class="field"><label for="note">Kommentar (valfritt)</label><textarea id="note" rows="2"></textarea></div>
+        <input type="checkbox" id="botcheck" tabindex="-1" autocomplete="off" style="display:none">
+        <button type="button" id="make" class="primary" style="width:100%">Skicka beställning</button>
+        <p class="err" id="err" role="alert"></p>
+      </div>
+    </div>
+    <div id="doneView" hidden>
+      <h3 style="margin-top:0">✅ Tack, beställningen är skickad!</h3>
+      <p style="color:var(--mute)">Ditt beställnings-ID: <strong id="doneId"></strong></p>
       <button type="button" id="again" class="primary">Gör en ny beställning</button>
     </div>
-  </div>
-
-  <div id="sendView" hidden>
-    <div class="card">
-      <h2>Utskicket misslyckades – skicka via mejl istället</h2>
+    <div id="sendView" hidden>
+      <h3 style="margin-top:0">Utskicket misslyckades – skicka via mejl istället</h3>
       <pre id="preview"></pre>
       <div class="actions">
-        <a id="mailBtn" class="primary" target="_top" href="#">Öppna i mejlprogram</a>
+        <a id="mailBtn" class="btn primary" target="_top" href="#">Öppna i mejlprogram</a>
         <button type="button" id="copy">Kopiera text</button>
         <button type="button" id="back">Ändra</button>
       </div>
       <p class="err" id="copyMsg" style="color:var(--mute)"></p>
-      <p style="color:var(--mute);font-size:.9rem;margin:8px 0 0">Mejlet skickas till <strong id="toShow"></strong>. Din beställning är sparad i texten ovan – öppna den i mejlprogrammet eller kopiera den.</p>
+      <p style="color:var(--mute);font-size:.9rem;margin:8px 0 0">Mejlet skickas till <strong id="toShow"></strong>.</p>
     </div>
   </div>
-</main>
+</dialog>
 
 <script>
 /* ====== ÄNDRA HÄR ====== */
-const ACCESS_KEY = "KLISTRA_IN_DIN_WEB3FORMS_NYCKEL";  // från web3forms.com (se instruktion)
-const MOTTAGARE = "jacobeliasson@hotmail.com";   // används bara som reservlösning om utskicket misslyckas
-const FORENING  = "Skabersjö IF";                        // föreningens namn (visas i ämnesraden)
+const ACCESS_KEY = "KLISTRA_IN_DIN_WEB3FORMS_NYCKEL";
+const MOTTAGARE = "jacobeliasson@hotmail.com";
+const FORENING  = "Skabersjö IF";
 const KLADSTORLEKAR = ["116","128","140","152","164","S","M","L","XL","XXL"];
-const ARTIKLAR = {
-  "Kläder": ["Matchtröja","Matchshorts","Matchstrumpor","Träningströja","Träningsshorts","Träningsoverall","Jacka","Mössa"],
-  "Material": ["Fotboll storlek 3","Fotboll storlek 4","Fotboll storlek 5","Koner","Träningsvästar","Målvaktshandskar","Första hjälpen-väska","Bollpump"]
-};
+/* Lägg till egen bild med img:"bilder/tröja.jpg". Utan img visas en platshållare. */
+const PRODUKTER = [
+  {id:1,cat:"Kläder",name:"Matchtröja",emoji:"👕",color:"#cfe8d5",desc:"Klubbens matchtröja i andningsbart material."},
+  {id:2,cat:"Kläder",name:"Matchshorts",emoji:"🩳",color:"#d8e4f2",desc:"Matchshorts med resår och dragsko."},
+  {id:3,cat:"Kläder",name:"Matchstrumpor",emoji:"🧦",color:"#f3e3c3",desc:"Strumpor i klubbens färger.",sizes:["28–33","34–38","39–42","43–46"]},
+  {id:4,cat:"Kläder",name:"Träningströja",emoji:"👕",color:"#e4d9f0",desc:"Lätt tröja för träning."},
+  {id:5,cat:"Kläder",name:"Träningsshorts",emoji:"🩳",color:"#f2d6d6",desc:"Shorts för träning."},
+  {id:6,cat:"Kläder",name:"Träningsoverall",emoji:"🧥",color:"#d3e6e8",desc:"Overall för uppvärmning och kyligare dagar."},
+  {id:7,cat:"Kläder",name:"Jacka",emoji:"🧥",color:"#cfd8cf",desc:"Vadderad klubbjacka."},
+  {id:8,cat:"Kläder",name:"Mössa",emoji:"🧢",color:"#f0e0cc",desc:"Varm mössa med klubbmärke.",sizes:["One size"]},
+  {id:9,cat:"Material",name:"Fotboll storlek 3",emoji:"⚽",color:"#e3ecd9",desc:"Till de yngsta lagen."},
+  {id:10,cat:"Material",name:"Fotboll storlek 4",emoji:"⚽",color:"#e3ecd9",desc:"Till mellanåldrarna."},
+  {id:11,cat:"Material",name:"Fotboll storlek 5",emoji:"⚽",color:"#e3ecd9",desc:"Standardboll för 11-mot-11."},
+  {id:12,cat:"Material",name:"Koner",emoji:"🔶",color:"#f5dcc2",desc:"Markeringskoner."},
+  {id:13,cat:"Material",name:"Träningsvästar",emoji:"🦺",color:"#f1efc2",desc:"Väst för lagindelning."},
+  {id:14,cat:"Material",name:"Målvaktshandskar",emoji:"🧤",color:"#d9dff2",desc:"Handskar med grepp.",sizes:["5","6","7","8","9","10"]},
+  {id:15,cat:"Material",name:"Första hjälpen-väska",emoji:"🩹",color:"#f2d3d3",desc:"Väska med grundutrustning."},
+  {id:16,cat:"Material",name:"Bollpump",emoji:"💨",color:"#d6e6ea",desc:"Pump med nål."}
+];
 /* ======================= */
 
 const $ = id => document.getElementById(id);
-function nyttId(){
-  const a = new Uint32Array(1); crypto.getRandomValues(a);
-  return String(a[0] % 100000000).padStart(8,'0');
-}
-let n = 0;
+const cart = [];           // {pid, size, q}
+let cat = "Alla", cur = null, curSize = "", curQty = 1;
+const sizesOf = p => p.cat === "Kläder" ? (p.sizes || KLADSTORLEKAR) : (p.sizes || []);
+const byId = id => PRODUKTER.find(p => p.id === id);
+const art = (p, cls) => p.img ? '<img src="'+p.img+'" alt="'+p.name+'">' : p.emoji;
 
-function artikelOptions(){
-  let h = '<option value="">Välj artikel…</option>';
-  for (const [grp, list] of Object.entries(ARTIKLAR)){
-    h += '<optgroup label="'+grp+'">' + list.map(a => '<option data-grp="'+grp+'">'+a+'</option>').join('') + '</optgroup>';
-  }
-  return h;
+function nyttId(){ const a = new Uint32Array(1); crypto.getRandomValues(a); return String(a[0] % 100000000).padStart(8,'0'); }
+
+function renderChips(){
+  $('chips').innerHTML = ["Alla","Kläder","Material"].map(c => '<button type="button" class="chip" aria-pressed="'+(c===cat)+'" data-c="'+c+'">'+c+'</button>').join('');
+}
+$('chips').addEventListener('click', e => { const c = e.target.dataset.c; if (c){ cat = c; renderChips(); renderGrid(); } });
+
+function renderGrid(){
+  $('grid').innerHTML = PRODUKTER.filter(p => cat === "Alla" || p.cat === cat).map(p => {
+    const n = cart.filter(i => i.pid === p.id).reduce((s,i) => s+i.q, 0);
+    return '<button type="button" class="p" data-id="'+p.id+'"><div class="ph" style="background:'+p.color+'">'+art(p)+(p.img?'':'<small>Bild kommer</small>')+(n?'<span class="tag">'+n+' i beställning</span>':'')+'</div><div class="pi"><b>'+p.name+'</b><span>'+p.cat+'</span></div></button>';
+  }).join('');
+}
+$('grid').addEventListener('click', e => { const b = e.target.closest('.p'); if (b) openProd(byId(+b.dataset.id)); });
+
+function openProd(p){
+  cur = p; curSize = ""; curQty = 1;
+  $('pName').textContent = p.name; $('pDesc').textContent = p.desc;
+  const im = $('pImg'); im.style.background = p.color; im.innerHTML = art(p);
+  const s = sizesOf(p);
+  $('sizeBox').hidden = !s.length;
+  if (s.length === 1) curSize = s[0];
+  $('sizes').innerHTML = s.map(x => '<button type="button" class="sz" aria-pressed="'+(x===curSize)+'">'+x+'</button>').join('');
+  $('pQty').textContent = 1; $('pErr').textContent = '';
+  $('prodDlg').showModal();
+}
+$('sizes').addEventListener('click', e => {
+  const b = e.target.closest('.sz'); if (!b) return;
+  curSize = b.textContent;
+  [...$('sizes').children].forEach(x => x.setAttribute('aria-pressed', x === b));
+});
+$('pMinus').onclick = () => { curQty = Math.max(1, curQty-1); $('pQty').textContent = curQty; };
+$('pPlus').onclick  = () => { curQty = Math.min(99, curQty+1); $('pQty').textContent = curQty; };
+$('pClose').onclick = () => $('prodDlg').close();
+$('pAdd').onclick = () => {
+  if (sizesOf(cur).length && !curSize){ $('pErr').textContent = 'Välj storlek först.'; return; }
+  const ex = cart.find(i => i.pid === cur.id && i.size === curSize);
+  if (ex) ex.q += curQty; else cart.push({pid:cur.id, size:curSize, q:curQty});
+  $('prodDlg').close(); update();
+};
+
+function update(){
+  $('count').textContent = cart.reduce((s,i) => s+i.q, 0);
+  renderGrid(); renderCart();
 }
 
-function addLine(){
-  n++;
-  const d = document.createElement('div');
-  d.className = 'row';
-  d.innerHTML =
-    '<select class="art" aria-label="Artikel">'+artikelOptions()+'</select>'+
-    '<div class="sub">'+
-      '<select class="size" aria-label="Storlek" hidden>'+
-        '<option value="">Storlek…</option>'+KLADSTORLEKAR.map(s=>'<option>'+s+'</option>').join('')+
-      '</select>'+
-      '<input class="qty" type="number" min="1" value="1" inputmode="numeric" aria-label="Antal">'+
-      '<button type="button" class="rm" aria-label="Ta bort rad">✕</button>'+
-    '</div>';
-  const art = d.querySelector('.art'), size = d.querySelector('.size');
-  art.addEventListener('change', () => {
-    const grp = art.selectedOptions[0] && art.selectedOptions[0].dataset.grp;
-    size.hidden = grp !== 'Kläder';
-    if (size.hidden) size.value = '';
-  });
-  d.querySelector('.rm').addEventListener('click', () => {
-    if ($('lines').children.length > 1) d.remove(); else { art.value=''; size.hidden=true; size.value=''; d.querySelector('.qty').value=1; }
-  });
-  $('lines').appendChild(d);
+function renderCart(){
+  const box = $('items');
+  if (!cart.length){ box.innerHTML = '<p class="empty">Din beställning är tom. Välj något i shopen.</p>'; $('formBox').hidden = true; return; }
+  $('formBox').hidden = false;
+  box.innerHTML = cart.map((i,k) => { const p = byId(i.pid);
+    return '<div class="ci"><div class="th" style="background:'+p.color+'">'+art(p)+'</div><div><b>'+p.name+'</b><small>'+(i.size?'Storlek '+i.size:'&nbsp;')+'</small><button type="button" class="rm" data-k="'+k+'" data-a="rm">Ta bort</button></div><div class="qty"><button type="button" data-k="'+k+'" data-a="-" aria-label="Minska">−</button><span>'+i.q+'</span><button type="button" data-k="'+k+'" data-a="+" aria-label="Öka">+</button></div></div>';
+  }).join('');
 }
+$('items').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const i = cart[+b.dataset.k], a = b.dataset.a;
+  if (a === 'rm' || (a === '-' && i.q === 1)) cart.splice(+b.dataset.k, 1);
+  else if (a === '-') i.q--; else if (a === '+') i.q = Math.min(99, i.q+1);
+  update();
+});
 
-function collect(){
-  const items = [];
-  for (const r of $('lines').children){
-    const a = r.querySelector('.art').value;
-    if (!a) continue;
-    const sizeEl = r.querySelector('.size');
-    items.push({a, s: sizeEl.hidden ? '' : sizeEl.value, q: parseInt(r.querySelector('.qty').value,10) || 0});
-  }
-  return items;
-}
+function showView(v){ ['cartView','doneView','sendView'].forEach(x => $(x).hidden = x !== v); $('cTitle').textContent = v === 'cartView' ? 'Din beställning' : 'Beställning'; }
+$('cartBtn').onclick = () => { showView('cartView'); renderCart(); $('cartDlg').showModal(); };
+$('cClose').onclick = () => $('cartDlg').close();
+[$('prodDlg'),$('cartDlg')].forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
 
-function buildText(items){
-  const L = [];
-  L.push('Beställning från ' + $('name').value.trim());
-  L.push('Lag/grupp: ' + $('team').value.trim());
-  L.push('Kontakt: ' + $('contact').value.trim());
-  L.push('');
-  L.push('Artiklar:');
-  items.forEach(i => L.push('- ' + i.q + ' st ' + i.a + (i.s ? ', stl ' + i.s : '')));
+function buildText(){
+  const L = ['Beställning från ' + $('name').value.trim(), 'Lag/grupp: ' + $('team').value.trim(), 'Kontakt: ' + $('contact').value.trim(), '', 'Artiklar:'];
+  cart.forEach(i => L.push('- ' + i.q + ' st ' + byId(i.pid).name + (i.size ? ', stl ' + i.size : '')));
   const note = $('note').value.trim();
-  if (note){ L.push(''); L.push('Kommentar: ' + note); }
+  if (note) L.push('', 'Kommentar: ' + note);
   return L.join('\n');
 }
 
-$('add').addEventListener('click', addLine);
-
 $('make').addEventListener('click', () => {
   const err = $('err'); err.textContent = '';
-  if (!$('name').value.trim() || !$('team').value.trim() || !$('contact').value.trim()){
-    err.textContent = 'Fyll i namn, lag och kontaktuppgift.'; return;
-  }
-  const items = collect();
-  if (!items.length){ err.textContent = 'Välj minst en artikel.'; return; }
-  if (items.some(i => i.q < 1)){ err.textContent = 'Antal måste vara minst 1.'; return; }
-  if (items.some(i => i.s === '' && document.querySelector('.size:not([hidden])') && false)){ return; }
-  for (const r of $('lines').children){
-    const sz = r.querySelector('.size');
-    if (r.querySelector('.art').value && !sz.hidden && !sz.value){ err.textContent = 'Välj storlek på alla klädesplagg.'; return; }
-  }
+  if (!$('name').value.trim() || !$('team').value.trim() || !$('contact').value.trim()){ err.textContent = 'Fyll i namn, lag och kontaktuppgift.'; return; }
+  if (!cart.length){ err.textContent = 'Lägg till minst en artikel.'; return; }
   const orderId = nyttId();
-  const text = 'Beställnings-ID: ' + orderId + '\n\n' + buildText(items);
+  const text = 'Beställnings-ID: ' + orderId + '\n\n' + buildText();
   const subject = 'Beställning ' + FORENING + ' – ' + $('team').value.trim() + ' – #' + orderId;
-  $('preview').textContent = text;
-  $('toShow').textContent = MOTTAGARE;
+  $('preview').textContent = text; $('toShow').textContent = MOTTAGARE;
   $('mailBtn').href = 'mailto:' + MOTTAGARE + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(text);
-
   const btn = $('make'); btn.disabled = true; btn.textContent = 'Skickar…';
   fetch('https://api.web3forms.com/submit', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json', 'Accept':'application/json'},
-    body: JSON.stringify({
-      access_key: ACCESS_KEY,
-      subject: subject,
-      from_name: $('name').value.trim() + ' (' + FORENING + ')',
-      message: text,
-      botcheck: $('botcheck').checked
-    })
+    method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body: JSON.stringify({access_key:ACCESS_KEY, subject, from_name:$('name').value.trim()+' ('+FORENING+')', message:text, botcheck:$('botcheck').checked})
   }).then(r => r.json()).then(j => {
     if (!j.success) throw new Error(j.message || 'fel');
-    $('doneId').textContent = orderId;
-    $('formView').hidden = true; $('doneView').hidden = false; window.scrollTo(0,0);
-  }).catch(() => {
-    $('formView').hidden = true; $('sendView').hidden = false; window.scrollTo(0,0);
-  }).finally(() => { btn.disabled = false; btn.textContent = 'Skicka beställning'; });
+    $('doneId').textContent = orderId; showView('doneView');
+  }).catch(() => showView('sendView'))
+  .finally(() => { btn.disabled = false; btn.textContent = 'Skicka beställning'; });
 });
 
-$('again').addEventListener('click', () => location.reload());
-
-$('back').addEventListener('click', () => { $('sendView').hidden = true; $('formView').hidden = false; });
-
+$('again').onclick = () => location.reload();
+$('back').onclick = () => showView('cartView');
 $('copy').addEventListener('click', async () => {
   const msg = $('copyMsg');
   try { await navigator.clipboard.writeText($('preview').textContent); msg.textContent = 'Kopierat! Klistra in i ett mejl till ' + MOTTAGARE + '.'; }
-  catch(e){
-    const r = document.createRange(); r.selectNodeContents($('preview'));
-    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
-    msg.textContent = 'Texten är markerad – kopiera den manuellt.';
-  }
+  catch(e){ const r = document.createRange(); r.selectNodeContents($('preview')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); msg.textContent = 'Texten är markerad – kopiera den manuellt.'; }
 });
 
-addLine();
+renderChips(); update();
 </script>
 </body>
 </html>
