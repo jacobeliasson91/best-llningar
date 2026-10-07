@@ -14,7 +14,7 @@ html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
-.bar{max-width:1100px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bar{max-width:1100px;margin:0 auto;padding:12px 84px 12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 h1{font-size:1.25rem;margin:0;letter-spacing:-.01em}
 .lead{max-width:1100px;margin:0 auto;padding:16px 16px 0;color:var(--mute)}
 main{max-width:1100px;margin:0 auto;padding:12px 16px 48px}
@@ -22,6 +22,8 @@ button,a.btn{font:inherit;cursor:pointer;border-radius:8px;padding:10px 14px;bor
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.p:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
 a.btn{display:inline-block;text-decoration:none}
+#adminBtn{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);right:12px;z-index:6;padding:6px 12px;font-size:.85rem;color:var(--mute)}
+#adminRoot{position:fixed;inset:0;z-index:20;background:var(--bg);overflow:auto}
 #cartBtn{position:relative}
 #count{background:var(--accent);color:var(--accent-ink);border-radius:99px;font-size:.75rem;padding:1px 7px;margin-left:6px;font-weight:700}
 .chips{display:flex;gap:8px;margin:8px 0 16px;overflow-x:auto}
@@ -75,6 +77,8 @@ pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px s
 </style>
 </head>
 <body>
+<button type="button" id="adminBtn">Admin</button>
+<div id="adminRoot" hidden></div>
 <div class="gate" id="gate">
   <div class="box">
     <h1>Klubbshop</h1>
@@ -152,11 +156,11 @@ const MOTTAGARE = "jacobeliasson@hotmail.com";
 const FORENING  = "Skabersjö IF";
 const SUPABASE_URL = "https://sjuwuhgbqzdwmtslljti.supabase.co";      // t.ex. https://abcdxyz.supabase.co  (Project Settings > API)
 const SUPABASE_ANON_KEY = "sb_publishable_yRmBBnp4TYRmcA8jIQmNDw_vpWWkEdI"; // "anon public"/"publishable" nyckel – den är avsedd att vara publik
-const KLUBBKOD  = "3626";   // koden ledarna måste skriva in (versaler spelar ingen roll)
+const KLUBBKOD  = "skabersjo2026";   // koden ledarna måste skriva in (versaler spelar ingen roll)
 const KLADSTORLEKAR = ["116","128","140","152","164","S","M","L","XL","XXL"];
 /* Priser (price) anges i kronor per styck – ändra till era riktiga. */
 /* Lägg till egen bild med img:"bilder/tröja.jpg". Utan img visas en platshållare. */
-const PRODUKTER = [
+const STANDARD = [
   {id:1,price:350,cat:"Kläder",name:"Matchtröja",emoji:"👕",color:"#cfe8d5",desc:"Klubbens matchtröja i andningsbart material."},
   {id:2,price:200,cat:"Kläder",name:"Matchshorts",emoji:"🩳",color:"#d8e4f2",desc:"Matchshorts med resår och dragsko."},
   {id:3,price:80,cat:"Kläder",name:"Matchstrumpor",emoji:"🧦",color:"#f3e3c3",desc:"Strumpor i klubbens färger.",sizes:["28–33","34–38","39–42","43–46"]},
@@ -174,6 +178,7 @@ const PRODUKTER = [
   {id:15,price:350,cat:"Material",name:"Första hjälpen-väska",emoji:"🩹",color:"#f2d3d3",desc:"Väska med grundutrustning."},
   {id:16,price:80,cat:"Material",name:"Bollpump",emoji:"💨",color:"#d6e6ea",desc:"Pump med nål."}
 ];
+let PRODUKTER = STANDARD;   // ersätts av produkterna i databasen när de finns (redigeras i Admin)
 /* ======================= */
 
 const $ = id => document.getElementById(id);
@@ -334,7 +339,18 @@ $('enter').onclick = tryCode;
 $('code').addEventListener('keydown', e => { if (e.key === 'Enter') tryCode(); });
 try { if (sessionStorage.getItem('klubbkod') === 'ok') unlock(); } catch(e){}
 
-renderChips(); update();
+/* Hämtar produkterna från databasen (redigeras via Admin). Faller tillbaka på listan ovan. */
+function loadProdukter(){
+  if (!SUPABASE_URL) return;
+  fetch(SUPABASE_URL + '/rest/v1/products?select=*&active=eq.true&order=id', {headers:{apikey:SUPABASE_ANON_KEY}})
+    .then(r => r.ok ? r.json() : []).then(d => { if (d.length){ PRODUKTER = d.map(p => ({...p, desc:p.descr||''})); renderGrid(); } }).catch(() => {});
+}
+$('adminBtn').onclick = () => {
+  if (window.openAdmin) return openAdmin();
+  const sc = document.createElement('script'); sc.src = 'admin.js'; sc.onload = () => openAdmin(); document.head.appendChild(sc);
+};
+
+renderChips(); update(); loadProdukter();
 </script>
 </body>
 </html>
