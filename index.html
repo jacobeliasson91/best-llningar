@@ -5,6 +5,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Klubbshop – Skabersjö IF</title>
+<script>if (location.hash.indexOf('#admin') === 0) document.documentElement.className += ' adm';</script><!-- visar admin-lagret direkt vid omladdning, så butiken inte blinkar förbi -->
 <style>
 :root{--bg:#f3f5f1;--card:#fff;--ink:#16221a;--mute:#5d6b60;--line:#d9e0da;--accent:#1f7a3d;--accent-ink:#fff;--shade:rgba(10,20,12,.5);
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -25,7 +26,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
 a.btn{display:inline-block;text-decoration:none}
 #adminBtn{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);left:max(12px,calc((100vw - 1100px) / 2 + 16px));z-index:6;padding:6px 12px;font-size:.85rem;color:var(--mute)}
-#adminRoot{position:fixed;inset:0;z-index:20;background:var(--bg);overflow:auto}
+#adminRoot{display:none;position:fixed;inset:0;z-index:20;background:var(--bg);overflow:auto}
+.adm #adminRoot{display:block}
+#adminRoot:empty::before{content:"Laddar…";display:block;padding-top:40vh;text-align:center;color:var(--mute)}
 #cartBtn{position:relative}
 #count{background:var(--accent);color:var(--accent-ink);border-radius:99px;font-size:.75rem;padding:1px 7px;margin-left:6px;font-weight:700}
 .chips{display:flex;gap:8px;margin:8px 0 16px;overflow-x:auto}
@@ -80,7 +83,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px s
 </head>
 <body>
 <button type="button" id="adminBtn">Admin</button>
-<div id="adminRoot" hidden></div>
+<div id="adminRoot"></div>
 <div class="gate" id="gate">
   <div class="box">
     <h1>Klubbshop</h1>

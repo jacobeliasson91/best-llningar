@@ -26,15 +26,16 @@ const CSS = `#adminRoot .w{max-width:900px;margin:0 auto;padding:16px 16px 60px}
 
 function load(src){ return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
 
-const closeAdmin = () => { document.documentElement.classList.remove('adm'); root.hidden = true; history.replaceState(null, '', location.pathname + location.search); };
+const closeAdmin = () => { document.documentElement.classList.remove('adm'); history.replaceState(null, '', location.pathname + location.search); };
 
 window.openAdmin = async function(){
+  document.documentElement.classList.add('adm');   // visa admin-lagret direkt ("Laddar…") medan resten startar
   if (!root){
     root = $('adminRoot'); const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     try { await load('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js'); sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
-    catch (e) { root.innerHTML = '<div class="w"><p class="e">Kunde inte starta (kontrollera SUPABASE_URL och SUPABASE_ANON_KEY i index.html).</p><button type="button" onclick="adminRoot.hidden=true">Stäng</button></div>'; root.hidden = false; return; }
+    catch (e) { root.innerHTML = '<div class="w"><p class="e">Kunde inte starta (kontrollera SUPABASE_URL och SUPABASE_ANON_KEY i index.html).</p><button type="button" onclick="document.documentElement.classList.remove(\'adm\')">Stäng</button></div>'; return; }
   }
-  root.hidden = false; if (!location.hash.startsWith('#admin')) history.replaceState(null, '', '#admin');
+  if (!location.hash.startsWith('#admin')) history.replaceState(null, '', '#admin');
   const { data } = await sb.auth.getSession();
   data.session ? shell(data.session.user.email) : login();
 };
