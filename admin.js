@@ -62,7 +62,7 @@ function login(){
 
 function shell(email){
   root.innerHTML = `<div class="w"><div class="top"><h1>Admin</h1><span class="tabs" style="display:flex;gap:8px">
-  <button type="button" id="tR" aria-pressed="true">Rapporter</button><button type="button" id="tP" aria-pressed="false">Produkter</button><button type="button" id="tH" aria-pressed="false">Orderhistorik</button></span>
+  <button type="button" id="tP" aria-pressed="true">Produkter</button><button type="button" id="tH" aria-pressed="false">Orderhistorik</button><button type="button" id="tR" aria-pressed="false">Rapporter</button></span>
   <button type="button" id="aout">Logga ut</button><button type="button" id="aclose">Stäng</button></div><div id="aview"></div></div>`;
   $('aclose').onclick = closeAdmin;
   $('aout').onclick = async () => { await sb.auth.signOut(); login(); };
@@ -70,7 +70,7 @@ function shell(email){
   /* flik sparas i adressen (#admin/produkter), så en omladdning stannar kvar på samma sida */
   const go = t => { tab(t); history.replaceState(null, '', t === 'P' ? '#admin/produkter' : t === 'H' ? '#admin/orderhistorik' : '#admin/rapporter'); t === 'P' ? products() : t === 'H' ? orders() : reports(); };
   $('tR').onclick = () => go('R'); $('tP').onclick = () => go('P'); $('tH').onclick = () => go('H');
-  go(location.hash === '#admin/produkter' ? 'P' : location.hash === '#admin/orderhistorik' ? 'H' : 'R');
+  go(location.hash === '#admin/rapporter' ? 'R' : location.hash === '#admin/orderhistorik' ? 'H' : 'P');   // Produkter är startsidan
 }
 
 /* ---------- RAPPORTER ---------- */
