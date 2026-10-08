@@ -144,10 +144,12 @@ function form(p){
   <div style="margin-top:12px"><label for="fd">Beskrivning</label><textarea id="fd" rows="2">${esc(p.descr)}</textarea></div>
   <div style="margin-top:12px"><label for="fs">Storlekar, separerade med komma (lämna tomt = standard för kläder, inga för material)</label><input id="fs" value="${esc((p.sizes || []).join(', '))}"></div>
   <div style="margin-top:12px"><label for="fi">Bild</label><div class="row" style="border:0"><${p.img ? 'img src="' + esc(p.img) + '"' : 'div'} class="th" id="fprev" alt="">${p.img ? '' : '</div>'}<input id="fi" type="file" accept="image/*"></div></div>
+  <div style="margin-top:12px"><label for="fb">Åter i lager (valfritt, visas på produktkortet tills datumet passerat)</label><div class="row" style="border:0;padding:0"><input id="fb" type="date" value="${esc(p.back_in_stock || '')}" style="flex:1"><button type="button" id="fbx">Rensa</button></div></div>
   <label class="ck"><input type="checkbox" id="fa"${p.active !== false ? ' checked' : ''}> Visa i butiken</label>
   <p class="e" id="ferr" role="alert"></p>
   <div class="ac"><button type="button" id="fsave" class="primary">Spara</button><button type="button" id="fcancel">Avbryt</button>${p.id ? '<button type="button" id="fdel" class="danger">Ta bort produkt</button>' : ''}</div></div>`;
   $('pform').scrollIntoView({ behavior: 'smooth' });
+  $('fbx').onclick = () => { $('fb').value = ''; };
   $('fcancel').onclick = () => { $('pform').innerHTML = ''; };
   $('fi').onchange = async e => { const f = e.target.files[0]; if (!f) return; newImg = await shrink(f); $('fprev').outerHTML = '<img class="th" id="fprev" alt="" src="' + URL.createObjectURL(newImg) + '">'; };
   $('fsave').onclick = save; if ($('fdel')) $('fdel').onclick = del;
@@ -164,7 +166,7 @@ async function save(){
   if (!name) return err('Ange ett namn.'); if (isNaN(price) || price < 0) return err('Ange ett pris i hela kronor.');
   $('fsave').disabled = true; err('Sparar…');
   const sizes = $('fs').value.split(',').map(x => x.trim()).filter(Boolean);
-  const row = { name, cat: $('fc').value, price, descr: $('fd').value.trim(), sizes: sizes.length ? sizes : null, active: $('fa').checked };
+  const row = { name, cat: $('fc').value, price, descr: $('fd').value.trim(), sizes: sizes.length ? sizes : null, active: $('fa').checked, back_in_stock: $('fb').value || null };
   try {
     if (newImg){
       const path = Date.now() + '.jpg', up = await sb.storage.from('product-images').upload(path, newImg, { contentType: 'image/jpeg' });

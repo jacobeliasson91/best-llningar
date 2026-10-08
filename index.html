@@ -7,7 +7,7 @@
 <title>Klubbshop – Skabersjö IF</title>
 <script>if (location.hash.indexOf('#admin') === 0) document.documentElement.className += ' adm';</script><!-- visar admin-lagret direkt vid omladdning, så butiken inte blinkar förbi -->
 <style>
-:root{--bg:#f4f4f3;--card:#fff;--ink:#16221a;--mute:#5d6b60;--line:#d9e0da;--accent:#1f7a3d;--accent-ink:#fff;--shade:rgba(10,20,12,.5);
+:root{--bg:#f3f5f1;--card:#fff;--ink:#16221a;--mute:#5d6b60;--line:#d9e0da;--accent:#1f7a3d;--accent-ink:#fff;--shade:rgba(10,20,12,.5);
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101811;--card:#192319;--ink:#e8efe9;--mute:#9fb0a2;--line:#2c3a2e;--accent:#3fae65;--accent-ink:#06130a}}
 :root[data-theme="dark"]{--bg:#101811;--card:#192319;--ink:#e8efe9;--mute:#9fb0a2;--line:#2c3a2e;--accent:#3fae65;--accent-ink:#06130a}
@@ -21,7 +21,7 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var
 h1{font-size:1.25rem;margin:0;letter-spacing:-.01em}
 .lead{max-width:1100px;margin:0 auto;padding:16px 16px 0;color:var(--mute)}
 main{max-width:1100px;margin:0 auto;padding:12px 16px 48px}
-button,a.btn{font:inherit;cursor:pointer;border-radius:4px;padding:10px 14px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+button,a.btn{font:inherit;cursor:pointer;border-radius:8px;padding:10px 14px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.p:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
 a.btn{display:inline-block;text-decoration:none}
@@ -38,45 +38,46 @@ html.adm{overflow:hidden}   /* låser sidan bakom admin, så bara admin-lagret h
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 @media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr);gap:16px}}
 @media(min-width:900px){.grid{grid-template-columns:repeat(4,1fr)}}
-.p{background:var(--card);border:1px solid var(--line);border-radius:5px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;text-align:left;padding:0}
+.p{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;text-align:left;padding:0}
 .p:hover{border-color:var(--accent)}
-.ph{aspect-ratio:7/8;display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative}
+.ph{aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative}
 .ph img{width:100%;height:100%;object-fit:cover}
 .ph small{position:absolute;bottom:8px;left:10px;font-size:.7rem;color:var(--mute)}
 .pi{padding:10px 12px 12px}
 .pi b{display:block;font-weight:600}
 .pi span{color:var(--mute);font-size:.85rem}
+.pi .lg{display:block;margin-top:2px;color:#d97706;font-weight:600}
 .tag{position:absolute;top:8px;right:8px;background:var(--accent);color:var(--accent-ink);border-radius:99px;font-size:.75rem;padding:2px 8px;font-weight:700}
-dialog{border:0;padding:0;background:var(--card);color:var(--ink);border-radius:7px;width:min(520px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto}
+dialog{border:0;padding:0;background:var(--card);color:var(--ink);border-radius:14px;width:min(520px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto}
 dialog::backdrop{background:var(--shade)}
 .dh{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card)}
 .dh h2{margin:0;font-size:1.1rem}
 .db{padding:16px}
-.big{aspect-ratio:8/7;border-radius:5px;font-size:5rem;display:flex;align-items:center;justify-content:center;margin-bottom:14px;overflow:hidden}
+.big{aspect-ratio:4/3;border-radius:10px;font-size:5rem;display:flex;align-items:center;justify-content:center;margin-bottom:14px;overflow:hidden}
 .big img{width:100%;height:100%;object-fit:cover}
 .sizes{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px}
 .sz{min-width:52px;text-align:center}
 .sz[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 label{display:block;font-size:.85rem;color:var(--mute);margin-bottom:4px}
-input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:10px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
 .field{margin-bottom:12px}
 .qty{display:inline-flex;align-items:center;gap:4px}
 .qty button{padding:6px 12px}
 .qty span{min-width:28px;text-align:center}
 .ci{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
 .ci:first-child{border-top:0}
-.th{width:56px;height:56px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;overflow:hidden}
+.th{width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;overflow:hidden}
 .th img{width:100%;height:100%;object-fit:cover}
 .ci small{color:var(--mute);display:block}
 .rm{border:0;background:none;color:var(--mute);padding:4px 0;font-size:.85rem;text-decoration:underline}
 h3{font-size:1rem;margin:20px 0 10px}
 .err{color:#c0392b;font-size:.9rem;margin:8px 0 0;min-height:1.2em}
-pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:12px;font:.9rem/1.5 ui-monospace,Menlo,monospace;margin:0 0 12px}
+pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;font:.9rem/1.5 ui-monospace,Menlo,monospace;margin:0 0 12px}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 .tot{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:12px;margin-top:4px;font-size:1.1rem}
 .empty{color:var(--mute);text-align:center;padding:24px 0}
 .gate{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:16px}
-.gate .box{background:var(--card);border:1px solid var(--line);border-radius:7px;padding:24px;width:min(380px,100%)}
+.gate .box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;width:min(380px,100%)}
 .gate h1{margin-bottom:6px}
 .gate p{color:var(--mute);margin:0 0 16px}
 [hidden]{display:none!important}
@@ -193,6 +194,8 @@ let cat = "Alla", cur = null, curSize = "", curQty = 1;
 const sizesOf = p => p.cat === "Kläder" ? (p.sizes || KLADSTORLEKAR) : (p.sizes || []);
 const kr = n => n.toLocaleString('sv-SE') + ' kr';
 const byId = id => PRODUKTER.find(p => p.id === id);
+/* "Åter i lager"-rad på produktkortet, visas tills datumet passerat */
+const lagerTxt = p => p.back_in_stock && p.back_in_stock >= new Date().toLocaleDateString('sv-SE') ? '<span class="lg">Åter i lager ' + p.back_in_stock + '</span>' : '';
 const art = (p, cls) => p.img ? '<img src="'+p.img+'" alt="'+p.name+'">' : p.emoji;
 
 function nyttId(){ const a = new Uint32Array(1); crypto.getRandomValues(a); return String(a[0] % 100000000).padStart(8,'0'); }
@@ -205,7 +208,7 @@ $('chips').addEventListener('click', e => { const c = e.target.dataset.c; if (c)
 function renderGrid(){
   $('grid').innerHTML = PRODUKTER.filter(p => cat === "Alla" || p.cat === cat).map(p => {
     const n = cart.filter(i => i.pid === p.id).reduce((s,i) => s+i.q, 0);
-    return '<button type="button" class="p" data-id="'+p.id+'"><div class="ph" style="background:'+p.color+'">'+art(p)+(p.img?'':'<small>Bild kommer</small>')+(n?'<span class="tag">'+n+' i beställning</span>':'')+'</div><div class="pi"><b>'+p.name+'</b><span>'+p.cat+' · '+kr(p.price)+'</span></div></button>';
+    return '<button type="button" class="p" data-id="'+p.id+'"><div class="ph" style="background:'+p.color+'">'+art(p)+(p.img?'':'<small>Bild kommer</small>')+(n?'<span class="tag">'+n+' i beställning</span>':'')+'</div><div class="pi"><b>'+p.name+'</b><span>'+p.cat+' · '+kr(p.price)+'</span>'+lagerTxt(p)+'</div></button>';
   }).join('');
 }
 $('grid').addEventListener('click', e => { const b = e.target.closest('.p'); if (b) openProd(byId(+b.dataset.id)); });
