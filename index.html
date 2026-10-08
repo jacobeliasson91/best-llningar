@@ -350,8 +350,9 @@ function loadProdukter(){
     .then(r => r.ok ? r.json() : []).then(d => { if (d.length){ PRODUKTER = d.map(p => ({...p, desc:p.descr||''})); renderGrid(); } }).catch(() => {});
 }
 $('adminBtn').onclick = () => {
+  if (!location.hash.startsWith('#admin')) history.replaceState(null, '', '#admin');   // omladdning stannar kvar i admin
   if (window.openAdmin) return openAdmin();
-  const sc = document.createElement('script'); sc.src = 'admin.js'; sc.onload = () => openAdmin(); document.head.appendChild(sc);
+  const sc = document.createElement('script'); sc.src = 'admin.js?t=' + Date.now(); sc.onload = () => openAdmin(); document.head.appendChild(sc);   // ?t= gör att webbläsaren alltid hämtar senaste admin.js
 };
 
 renderChips(); update(); loadProdukter();
