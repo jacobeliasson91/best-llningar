@@ -301,7 +301,7 @@ $('make').addEventListener('click', () => {
       service_id: EMAILJS_SERVICE_ID, template_id: EMAILJS_TEMPLATE_ID, user_id: EMAILJS_PUBLIC_KEY,
       template_params: {
         subject, order_id: orderId, name: $('name').value.trim(), team: $('team').value.trim(), contact,
-        note: $('note').value.trim() || '–', message: itemsHtml() + '<p><a href="' + dealerLink + '">Öppna beställningen och markera vad som är klart för upphämtning</a></p>', message_text: itemsText() + '\n\nMarkera klart för upphämtning: ' + dealerLink, dealer_link: dealerLink,
+        note: $('note').value.trim() || '–', message: itemsHtml() + '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0"><tr><td align="center" bgcolor="#1f7a3d" style="border-radius:8px"><a href="' + dealerLink + '" style="display:inline-block;padding:16px 36px;font:bold 18px Arial,Helvetica,sans-serif;color:#ffffff;text-decoration:none;border-radius:8px">Uppdatera orderstatus</a></td></tr></table>', message_text: itemsText() + '\n\nUppdatera orderstatus: ' + dealerLink, dealer_link: dealerLink,
         reply_to: contact.includes('@') ? contact : MOTTAGARE
       }
     })
