@@ -20,6 +20,8 @@ dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px}dt{color:va
 button{font:inherit;cursor:pointer;border-radius:8px;padding:12px 16px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
 button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;width:100%}
+textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;resize:vertical}
+textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 button:disabled{opacity:.5;cursor:default}
 </style>
 </head>
@@ -34,6 +36,8 @@ button:disabled{opacity:.5;cursor:default}
         <b>Klart för upphämtning</b><button type="button" id="all">Markera alla</button></div>
       <div id="items"></div>
     </div>
+    <div class="card"><label for="cmt" class="m" style="display:block;margin-bottom:6px">Kommentar till beställaren (valfritt, följer med i mejlet)</label>
+      <textarea id="cmt" rows="3" maxlength="500" placeholder="T.ex. Matchstrumporna kommer först v.45"></textarea></div>
     <button type="button" id="save" class="primary" disabled>Uppdatera orderstatus</button>
     <p id="res" role="status"></p>
     <button type="button" id="retry" hidden>Försök skicka mejlet igen</button>
@@ -55,7 +59,7 @@ const UPPHAMTNING = "";   // valfri rad i mejlet, t.ex. "Hämtas hos Sportbutike
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const q = new URLSearchParams(location.search), O = q.get('o') || '', K = q.get('k') || '';
-let order = null, saved = '';   // saved = ikryssade artiklar (id) som senast sparats
+let order = null, saved = '', comment = '';   // saved = ikryssade artiklar (id) som senast sparats
 
 const rpc = (fn, args) => fetch(SUPABASE_URL + '/rest/v1/rpc/' + fn, {
   method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY }, body: JSON.stringify(args)
@@ -72,24 +76,24 @@ function show(o){
   $('items').innerHTML = o.items.map(i => '<label class="it"><input type="checkbox" value="' + i.id + '"' + (i.ready ? ' checked' : '') + '><span><b>' + esc(label(i)) + '</b><span class="m">' + (i.qty * i.price).toLocaleString('sv-SE') + ' kr</span></span></label>').join('');
   saved = key(o.items.filter(i => i.ready).map(i => i.id)); changed();
 }
-function changed(){ $('save').disabled = key(checked()) === saved; }
-$('items').addEventListener('change', changed);
+function changed(){ $('save').disabled = key(checked()) === saved && !$('cmt').value.trim(); }
+$('items').addEventListener('change', changed); $('cmt').addEventListener('input', changed);
 $('all').onclick = () => { const b = [...document.querySelectorAll('#items input')], on = b.some(x => !x.checked); b.forEach(x => x.checked = on); changed(); };
 
 const kr = n => n.toLocaleString('sv-SE') + ' kr';
 const allReady = () => order.items.every(i => i.ready);
-const intro = () => allReady() ? 'Din beställning är klar för upphämtning' : 'Delar av din beställning är klara för upphämtning';
+const intro = () => !order.items.some(i => i.ready) ? 'Information om din beställning' : allReady() ? 'Din beställning är klar för upphämtning' : 'Delar av din beställning är klara för upphämtning';
 /* Bara själva statusuppdateringen: rubrik, ordernummer och status per artikel */
 function mailBody(){
   const f = 'font-family:Arial,Helvetica,sans-serif;', td = 'padding:12px 8px;border-bottom:1px solid #e3e3e3;' + f;
   const rows = order.items.map(i => '<tr><td style="'+td+'font-size:15px;color:#111">'+i.qty+' st – '+esc(i.name)+(i.size?' ('+esc(i.size)+')':'')+'</td><td style="'+td+'font-size:14px;font-weight:700;text-align:right;white-space:nowrap;color:'+(i.ready?'#1f7a3d':'#888')+'">'+(i.ready?'✔ Klar för upphämtning':'Ej klar ännu')+'</td></tr>').join('');
   return '<h2 style="margin:0 0 4px;font-size:22px;'+f+'color:#1f7a3d">'+intro()+'</h2><p style="margin:0 0 20px;font-size:14px;color:#666;'+f+'">Order #'+esc(order.order_no)+'</p>' +
-    (allReady() ? '' : '<p style="margin:0 0 12px;font-size:15px;color:#111;'+f+'">De artiklar som är markerade med ✔ kan hämtas nu. Resten meddelas när de är klara.</p>') +
     '<table style="width:100%;max-width:560px;border-collapse:collapse"><tbody>' + rows + '</tbody></table>' +
+    (comment ? '<p style="margin:20px 0 4px;font-size:13px;color:#666;'+f+'">Meddelande från sporthandlaren</p><p style="margin:0;font-size:15px;color:#111;'+f+'">' + esc(comment).replace(/\n/g, '<br>') + '</p>' : '') +
     (UPPHAMTNING ? '<p style="margin:20px 0 0;font-size:15px;color:#111;'+f+'">' + esc(UPPHAMTNING) + '</p>' : '');
 }
 function mailText(){
-  return intro() + ' (order #' + order.order_no + ')\n\n' + order.items.map(i => (i.ready ? '[KLAR]    ' : '[EJ KLAR] ') + label(i)).join('\n') + (UPPHAMTNING ? '\n\n' + UPPHAMTNING : '');
+  return intro() + ' (order #' + order.order_no + ')\n\n' + order.items.map(i => (i.ready ? '[KLAR]    ' : '[EJ KLAR] ') + label(i)).join('\n') + (comment ? '\n\nMeddelande från sporthandlaren: ' + comment : '') + (UPPHAMTNING ? '\n\n' + UPPHAMTNING : '');
 }
 function sendMail(){
   if (!EMAILJS_STATUS_TEMPLATE_ID) return Promise.reject(new Error('Mejlmallen är inte inställd i handlare.html'));
@@ -98,20 +102,20 @@ function sendMail(){
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ service_id: EMAILJS_SERVICE_ID, template_id: EMAILJS_STATUS_TEMPLATE_ID, user_id: EMAILJS_PUBLIC_KEY,
       template_params: { to_email: email, cc_email: email === MOTTAGARE ? '' : MOTTAGARE, reply_to: MOTTAGARE,
-        subject: 'Beställning ' + FORENING + ' – ' + order.team + ' – #' + order.order_no + (allReady() ? ' – klar för upphämtning' : ' – delar klara för upphämtning'),
+        subject: 'Beställning ' + FORENING + ' – ' + order.team + ' – #' + order.order_no + (!order.items.some(i => i.ready) ? ' – information om din beställning' : allReady() ? ' – klar för upphämtning' : ' – delar klara för upphämtning'),
         order_id: order.order_no, name: order.name, team: order.team, contact: order.contact, note: order.note || '–',
         message: mailBody(), message_text: mailText() } })
   }).then(async r => { if (!r.ok) throw new Error(await r.text() || r.status); });
 }
-function mailDone(){ $('retry').hidden = true; $('res').className = 'ok'; $('res').textContent = 'Status sparad och mejl skickat till ' + order.name + ' och kansliet.'; }
+function mailDone(){ $('retry').hidden = true; $('cmt').value = ''; comment = ''; changed(); $('res').className = 'ok'; $('res').textContent = 'Status sparad och mejl skickat till ' + order.name + ' och kansliet.'; }
 function mailFail(e){ $('res').className = 'err'; $('res').textContent = 'Status är sparad, men mejlet kunde inte skickas: ' + (e.message || e); $('retry').hidden = false; }
 
 $('save').onclick = async () => {
-  const b = $('save'); b.disabled = true; b.textContent = 'Sparar…'; $('res').textContent = ''; $('retry').hidden = true;
+  const b = $('save'); b.disabled = true; b.textContent = 'Sparar…'; $('res').textContent = ''; $('retry').hidden = true; comment = $('cmt').value.trim();
   try { show(await rpc('dealer_set_ready', { p_order: O, p_token: K, p_ready: checked() })); }
   catch (e) { $('res').className = 'err'; $('res').textContent = 'Kunde inte spara: ' + (e.message || e); b.textContent = 'Uppdatera orderstatus'; changed(); return; }
   b.textContent = 'Uppdatera orderstatus';
-  if (!order.items.some(i => i.ready)){ $('res').className = 'm'; $('res').textContent = 'Sparat. Inget är markerat som klart, så inget mejl skickades.'; return; }
+  if (!order.items.some(i => i.ready) && !comment){ $('res').className = 'm'; $('res').textContent = 'Sparat. Inget är markerat som klart, så inget mejl skickades.'; return; }
   try { await sendMail(); mailDone(); } catch (e) { mailFail(e); }
 };
 $('retry').onclick = () => sendMail().then(mailDone, mailFail);
