@@ -22,7 +22,13 @@ const CSS = `#adminRoot .w{max-width:900px;margin:0 auto;padding:16px 16px 60px}
 #adminRoot .ck{display:flex;gap:8px;align-items:center;font-size:.95rem;color:var(--ink);margin-top:12px}
 #adminRoot .ac{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}#adminRoot .danger{color:#c0392b}
 #adminRoot .tabs button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-#adminRoot .lg{max-width:380px;margin:12vh auto 0}`;
+#adminRoot .lg{max-width:380px;margin:12vh auto 0}
+#adminRoot details.o{border-bottom:1px solid var(--line)}#adminRoot details.o:last-child{border:0}
+#adminRoot details.o summary{cursor:pointer;padding:12px 0;display:flex;gap:12px;justify-content:space-between;align-items:center;list-style:none}
+#adminRoot details.o summary::-webkit-details-marker{display:none}#adminRoot details.o summary b{display:block}
+#adminRoot details.o summary .rt{text-align:right;white-space:nowrap}#adminRoot .ok{color:var(--accent);font-weight:600}
+#adminRoot details.o[open] summary{border-bottom:1px dashed var(--line)}
+#adminRoot dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:12px 0}#adminRoot dt{color:var(--mute)}#adminRoot dd{margin:0;overflow-wrap:anywhere}`;
 
 function load(src){ return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
 
@@ -56,15 +62,15 @@ function login(){
 
 function shell(email){
   root.innerHTML = `<div class="w"><div class="top"><h1>Admin</h1><span class="tabs" style="display:flex;gap:8px">
-  <button type="button" id="tR" aria-pressed="true">Rapporter</button><button type="button" id="tP" aria-pressed="false">Produkter</button></span>
+  <button type="button" id="tR" aria-pressed="true">Rapporter</button><button type="button" id="tP" aria-pressed="false">Produkter</button><button type="button" id="tH" aria-pressed="false">Orderhistorik</button></span>
   <button type="button" id="aout">Logga ut</button><button type="button" id="aclose">Stäng</button></div><div id="aview"></div></div>`;
   $('aclose').onclick = closeAdmin;
   $('aout').onclick = async () => { await sb.auth.signOut(); login(); };
-  const tab = t => { $('tR').setAttribute('aria-pressed', t === 'R'); $('tP').setAttribute('aria-pressed', t === 'P'); };
+  const tab = t => { $('tR').setAttribute('aria-pressed', t === 'R'); $('tP').setAttribute('aria-pressed', t === 'P'); $('tH').setAttribute('aria-pressed', t === 'H'); };
   /* flik sparas i adressen (#admin/produkter), så en omladdning stannar kvar på samma sida */
-  const go = t => { tab(t); history.replaceState(null, '', t === 'P' ? '#admin/produkter' : '#admin/rapporter'); t === 'P' ? products() : reports(); };
-  $('tR').onclick = () => go('R'); $('tP').onclick = () => go('P');
-  go(location.hash === '#admin/produkter' ? 'P' : 'R');
+  const go = t => { tab(t); history.replaceState(null, '', t === 'P' ? '#admin/produkter' : t === 'H' ? '#admin/orderhistorik' : '#admin/rapporter'); t === 'P' ? products() : t === 'H' ? orders() : reports(); };
+  $('tR').onclick = () => go('R'); $('tP').onclick = () => go('P'); $('tH').onclick = () => go('H');
+  go(location.hash === '#admin/produkter' ? 'P' : location.hash === '#admin/orderhistorik' ? 'H' : 'R');
 }
 
 /* ---------- RAPPORTER ---------- */
@@ -115,6 +121,34 @@ function csv(){
     .concat(report.map(x => [x.q, x.name].concat(bs ? [x.size] : [], [x.price, x.q * x.price])));
   const a = document.createElement('a'); a.download = 'bestallningar.csv';
   a.href = URL.createObjectURL(new Blob(['\uFEFF' + rows.map(r => r.join(';')).join('\n')], { type: 'text/csv;charset=utf-8' })); a.click();
+}
+
+/* ---------- ORDERHISTORIK ---------- */
+let ords = [];
+const when = d => new Date(d).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' });
+async function orders(){
+  $('aview').innerHTML = `<div class="c"><label for="hq">Sök på order-ID, namn, lag eller e-post</label><input id="hq" type="search" autocomplete="off"><p class="e" id="herr" role="alert"></p><p class="m" id="hcount" style="margin:0"></p></div><div class="c" id="hlist"><p class="m">Hämtar…</p></div>`;
+  ords = [];
+  for (let f = 0; ; f += 500){
+    const { data, error } = await sb.from('orders').select('order_no,created_at,name,team,contact,note,order_items(product_name,size,qty,unit_price,ready)')
+      .order('created_at', { ascending: false }).range(f, f + 499);
+    if (error){ $('hlist').innerHTML = ''; $('herr').textContent = 'Kunde inte hämta ordrar: ' + error.message; return; }
+    ords.push(...data); if (data.length < 500) break;
+  }
+  $('hq').oninput = drawOrders; drawOrders();
+}
+function drawOrders(){
+  const q = $('hq').value.trim().toLowerCase();
+  const list = ords.filter(o => !q || [o.order_no, o.name, o.team, o.contact].join(' ').toLowerCase().includes(q));
+  $('hcount').textContent = list.length + ' av ' + ords.length + ' ordrar, senaste först';
+  $('hlist').innerHTML = list.length ? list.map(o => {
+    const it = o.order_items || [], n = it.filter(i => i.ready).length, tot = it.reduce((s, i) => s + i.qty * i.unit_price, 0);
+    const st = !it.length ? '' : n === it.length ? '<span class="ok">Alla klara</span>' : n ? '<span class="m">' + n + ' av ' + it.length + ' klara</span>' : '<span class="m">Ej klara</span>';
+    return `<details class="o"><summary><span><b>Order #${esc(o.order_no)} – ${esc(o.team)}</b><span class="m">${when(o.created_at)} · ${esc(o.name)}</span></span><span class="rt">${kr(tot)}<br>${st}</span></summary>
+    <dl><dt>Order-ID</dt><dd>#${esc(o.order_no)}</dd><dt>Lagd</dt><dd>${when(o.created_at)}</dd><dt>Beställare</dt><dd>${esc(o.name)}, ${esc(o.team)}</dd><dt>E-post</dt><dd>${esc(o.contact)}</dd>${o.note ? '<dt>Kommentar</dt><dd>' + esc(o.note) + '</dd>' : ''}</dl>
+    <div class="wr"><table><thead><tr><th class="r">Antal</th><th>Artikel</th><th>Storlek</th><th class="r">À-pris</th><th class="r">Summa</th><th>Status</th></tr></thead><tbody>${it.map(i => `<tr><td class="r">${i.qty} st</td><td>${esc(i.product_name)}</td><td>${esc(i.size || '–')}</td><td class="r">${kr(i.unit_price)}</td><td class="r">${kr(i.qty * i.unit_price)}</td><td>${i.ready ? '<span class="ok">✔ Klar</span>' : '<span class="m">Ej klar</span>'}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td colspan="4" class="r">Totalt</td><td class="r">${kr(tot)}</td><td></td></tr></tfoot></table></div></details>`;
+  }).join('') : '<p class="m">Inga ordrar hittades.</p>';
 }
 
 /* ---------- PRODUKTER ---------- */
