@@ -4,362 +4,127 @@
 <meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Klubbshop – Skabersjö IF</title>
-<script>if (location.hash.indexOf('#admin') === 0) document.documentElement.className += ' adm';</script><!-- visar admin-lagret direkt vid omladdning, så butiken inte blinkar förbi -->
+<title>Orderstatus – Skabersjö IF</title>
 <style>
-:root{--bg:#f3f5f1;--card:#fff;--ink:#16221a;--mute:#5d6b60;--line:#d9e0da;--accent:#1f7a3d;--accent-ink:#fff;--shade:rgba(10,20,12,.5);
-box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--bg:#f3f5f1;--card:#fff;--ink:#16221a;--mute:#5d6b60;--line:#d9e0da;--accent:#1f7a3d;--accent-ink:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101811;--card:#192319;--ink:#e8efe9;--mute:#9fb0a2;--line:#2c3a2e;--accent:#3fae65;--accent-ink:#06130a}}
-:root[data-theme="dark"]{--bg:#101811;--card:#192319;--ink:#e8efe9;--mute:#9fb0a2;--line:#2c3a2e;--accent:#3fae65;--accent-ink:#06130a}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
-.bar{max-width:1100px;margin:0 auto;padding:12px 16px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
-.bar h1{text-align:center}.bar>span:first-child{min-width:70px}.bar #cartBtn{justify-self:end}
-@media (max-width:560px){.bar{grid-template-columns:auto 1fr auto}}
-h1{font-size:1.25rem;margin:0;letter-spacing:-.01em}
-.lead{max-width:1100px;margin:0 auto;padding:16px 16px 0;color:var(--mute)}
-main{max-width:1100px;margin:0 auto;padding:12px 16px 48px}
-button,a.btn{font:inherit;cursor:pointer;border-radius:8px;padding:10px 14px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
-button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.p:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
-a.btn{display:inline-block;text-decoration:none}
-#adminBtn{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);left:max(12px,calc((100vw - 1100px) / 2 + 16px));z-index:6;padding:6px 12px;font-size:.85rem;color:var(--mute)}
-#adminRoot{position:fixed;inset:0;z-index:20;background:var(--bg);overflow:auto}
-.adm #adminRoot{display:block}
-#adminRoot:empty::before{content:"Laddar…";display:block;padding-top:40vh;text-align:center;color:var(--mute)}
-#cartBtn{position:relative}
-#count{background:var(--accent);color:var(--accent-ink);border-radius:99px;font-size:.75rem;padding:1px 7px;margin-left:6px;font-weight:700}
-.chips{display:flex;gap:8px;margin:8px 0 16px;overflow-x:auto}
-.chip{border-radius:99px;white-space:nowrap}
-.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-@media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr);gap:16px}}
-@media(min-width:900px){.grid{grid-template-columns:repeat(4,1fr)}}
-.p{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;text-align:left;padding:0}
-.p:hover{border-color:var(--accent)}
-.ph{aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative}
-.ph img{width:100%;height:100%;object-fit:cover}
-.ph small{position:absolute;bottom:8px;left:10px;font-size:.7rem;color:var(--mute)}
-.pi{padding:10px 12px 12px}
-.pi b{display:block;font-weight:600}
-.pi span{color:var(--mute);font-size:.85rem}
-.tag{position:absolute;top:8px;right:8px;background:var(--accent);color:var(--accent-ink);border-radius:99px;font-size:.75rem;padding:2px 8px;font-weight:700}
-dialog{border:0;padding:0;background:var(--card);color:var(--ink);border-radius:14px;width:min(520px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto}
-dialog::backdrop{background:var(--shade)}
-.dh{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card)}
-.dh h2{margin:0;font-size:1.1rem}
-.db{padding:16px}
-.big{aspect-ratio:4/3;border-radius:10px;font-size:5rem;display:flex;align-items:center;justify-content:center;margin-bottom:14px;overflow:hidden}
-.big img{width:100%;height:100%;object-fit:cover}
-.sizes{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px}
-.sz{min-width:52px;text-align:center}
-.sz[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-label{display:block;font-size:.85rem;color:var(--mute);margin-bottom:4px}
-input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
-.field{margin-bottom:12px}
-.qty{display:inline-flex;align-items:center;gap:4px}
-.qty button{padding:6px 12px}
-.qty span{min-width:28px;text-align:center}
-.ci{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
-.ci:first-child{border-top:0}
-.th{width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;overflow:hidden}
-.th img{width:100%;height:100%;object-fit:cover}
-.ci small{color:var(--mute);display:block}
-.rm{border:0;background:none;color:var(--mute);padding:4px 0;font-size:.85rem;text-decoration:underline}
-h3{font-size:1rem;margin:20px 0 10px}
-.err{color:#c0392b;font-size:.9rem;margin:8px 0 0;min-height:1.2em}
-pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;font:.9rem/1.5 ui-monospace,Menlo,monospace;margin:0 0 12px}
-.actions{display:flex;gap:8px;flex-wrap:wrap}
-.tot{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:12px;margin-top:4px;font-size:1.1rem}
-.empty{color:var(--mute);text-align:center;padding:24px 0}
-.gate{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:16px}
-.gate .box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;width:min(380px,100%)}
-.gate h1{margin-bottom:6px}
-.gate p{color:var(--mute);margin:0 0 16px}
-[hidden]{display:none!important}
+main{max-width:640px;margin:0 auto;padding:16px 16px 48px}
+h1{font-size:1.25rem;margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.m{color:var(--mute)}.ok{color:var(--accent);font-weight:600}.err{color:#c0392b}
+dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px}dt{color:var(--mute)}dd{margin:0;overflow-wrap:anywhere}
+.it{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.it:last-child{border:0}.it input{width:24px;height:24px;flex:none;accent-color:var(--accent)}.it b{display:block}
+button{font:inherit;cursor:pointer;border-radius:8px;padding:12px 16px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;width:100%}
+textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;resize:vertical}
+textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.5;cursor:default}
 </style>
 </head>
 <body>
-<button type="button" id="adminBtn">Admin</button>
-<div id="adminRoot" hidden></div>
-<div class="gate" id="gate">
-  <div class="box">
-    <h1>Klubbshop</h1>
-    <p>Skriv in klubbkoden för att komma till beställningen.</p>
-    <div class="field"><label for="code">Klubbkod</label><input id="code" type="password" autocomplete="off" autocapitalize="off"></div>
-    <button type="button" id="enter" class="primary" style="width:100%">Fortsätt</button>
-    <p class="err" id="codeErr" role="alert"></p>
-  </div>
-</div>
-<div id="shop" hidden>
-<header><div class="bar"><span></span><h1>Klubbshop</h1><button id="cartBtn" type="button">Din beställning<span id="count">0</span></button></div></header>
-<p class="lead">Välj plagg och material, lägg i beställningen och skicka direkt till föreningen.</p>
 <main>
-  <div class="chips" id="chips"></div>
-  <div class="grid" id="grid"></div>
-</main>
-</div>
-
-<dialog id="prodDlg">
-  <div class="dh"><h2 id="pName"></h2><button type="button" id="pClose" aria-label="Stäng">✕</button></div>
-  <div class="db">
-    <div class="big" id="pImg"></div>
-    <p id="pPrice" style="margin:0 0 4px;font-weight:700;font-size:1.1rem"></p>
-    <p id="pDesc" style="margin:0 0 12px;color:var(--mute)"></p>
-    <div id="sizeBox"><label>Storlek</label><div class="sizes" id="sizes"></div></div>
-    <label>Antal</label>
-    <div class="qty" style="margin-bottom:14px"><button type="button" id="pMinus" aria-label="Minska">−</button><span id="pQty">1</span><button type="button" id="pPlus" aria-label="Öka">+</button></div>
-    <p class="err" id="pErr" role="alert"></p>
-    <button type="button" class="primary" id="pAdd" style="width:100%">Lägg i beställningen</button>
-  </div>
-</dialog>
-
-<dialog id="cartDlg">
-  <div class="dh"><h2 id="cTitle">Din beställning</h2><button type="button" id="cClose" aria-label="Stäng">✕</button></div>
-  <div class="db">
-    <div id="cartView">
+  <h1>Orderstatus</h1>
+  <p id="msg" class="m">Hämtar beställningen…</p>
+  <div id="order" hidden>
+    <div class="card"><dl id="info"></dl></div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <b>Klart för upphämtning</b><button type="button" id="all">Markera alla</button></div>
       <div id="items"></div>
-      <div id="formBox">
-        <h3>Om dig</h3>
-        <div class="field"><label for="name">Ditt namn</label><input id="name" autocomplete="name"></div>
-        <div class="field"><label for="team">Lag / grupp</label><input id="team" placeholder="t.ex. P-14, F-15"></div>
-        <div class="field"><label for="contact">E-post (du får besked här när beställningen är klar)</label><input id="contact" autocomplete="email"></div>
-        <div class="field"><label for="note">Kommentar (valfritt)</label><textarea id="note" rows="2"></textarea></div>
-        <input type="checkbox" id="botcheck" tabindex="-1" autocomplete="off" style="display:none">
-        <button type="button" id="make" class="primary" style="width:100%">Skicka beställning</button>
-        <p class="err" id="err" role="alert"></p>
-      </div>
     </div>
-    <div id="doneView" hidden>
-      <h3 style="margin-top:0">✅ Tack, beställningen är skickad!</h3>
-      <p style="color:var(--mute)">Ditt beställnings-ID: <strong id="doneId"></strong></p>
-      <button type="button" id="again" class="primary">Gör en ny beställning</button>
-    </div>
-    <div id="sendView" hidden>
-      <h3 style="margin-top:0">Utskicket misslyckades – skicka via mejl istället</h3>
-      <p class="err" id="reason"></p>
-      <pre id="preview"></pre>
-      <div class="actions">
-        <a id="mailBtn" class="btn primary" target="_top" href="#">Öppna i mejlprogram</a>
-        <button type="button" id="copy">Kopiera text</button>
-        <button type="button" id="back">Ändra</button>
-      </div>
-      <p class="err" id="copyMsg" style="color:var(--mute)"></p>
-      <p style="color:var(--mute);font-size:.9rem;margin:8px 0 0">Mejlet skickas till <strong id="toShow"></strong>.</p>
-    </div>
+    <div class="card"><label for="cmt" class="m" style="display:block;margin-bottom:6px">Kommentar till beställaren (valfritt, följer med i mejlet)</label>
+      <textarea id="cmt" rows="3" maxlength="500" placeholder="T.ex. Matchstrumporna kommer först v.45"></textarea></div>
+    <button type="button" id="save" class="primary" disabled>Uppdatera orderstatus</button>
+    <p id="res" role="status"></p>
+    <button type="button" id="retry" hidden>Försök skicka mejlet igen</button>
   </div>
-</dialog>
+</main>
 
 <script>
-/* ====== ÄNDRA HÄR ====== */
-const EMAILJS_PUBLIC_KEY = "vywZpVyUm-PRw0TS9";   // emailjs.com > Account > General
-const EMAILJS_SERVICE_ID = "service_qq1rwdt";   // emailjs.com > Email Services
-const EMAILJS_TEMPLATE_ID = "template_jg3bkt9"; // emailjs.com > Email Templates
-const MOTTAGARE = "jacobeliasson@hotmail.com";
-const FORENING  = "Skabersjö IF";
-const SUPABASE_URL = "https://sjuwuhgbqzdwmtslljti.supabase.co";      // t.ex. https://abcdxyz.supabase.co  (Project Settings > API)
-const SUPABASE_ANON_KEY = "sb_publishable_yRmBBnp4TYRmcA8jIQmNDw_vpWWkEdI"; // "anon public"/"publishable" nyckel – den är avsedd att vara publik
-const KLUBBKOD  = "3626";   // koden ledarna måste skriva in (versaler spelar ingen roll)
-const KLADSTORLEKAR = ["116","128","140","152","164","S","M","L","XL","XXL"];
-/* Priser (price) anges i kronor per styck – ändra till era riktiga. */
-/* Lägg till egen bild med img:"bilder/tröja.jpg". Utan img visas en platshållare. */
-const STANDARD = [
-  {id:1,price:350,cat:"Kläder",name:"Matchtröja",emoji:"👕",color:"#cfe8d5",desc:"Klubbens matchtröja i andningsbart material."},
-  {id:2,price:200,cat:"Kläder",name:"Matchshorts",emoji:"🩳",color:"#d8e4f2",desc:"Matchshorts med resår och dragsko."},
-  {id:3,price:80,cat:"Kläder",name:"Matchstrumpor",emoji:"🧦",color:"#f3e3c3",desc:"Strumpor i klubbens färger.",sizes:["28–33","34–38","39–42","43–46"]},
-  {id:4,price:300,cat:"Kläder",name:"Träningströja",emoji:"👕",color:"#e4d9f0",desc:"Lätt tröja för träning."},
-  {id:5,price:180,cat:"Kläder",name:"Träningsshorts",emoji:"🩳",color:"#f2d6d6",desc:"Shorts för träning."},
-  {id:6,price:600,cat:"Kläder",name:"Träningsoverall",emoji:"🧥",color:"#d3e6e8",desc:"Overall för uppvärmning och kyligare dagar."},
-  {id:7,price:700,cat:"Kläder",name:"Jacka",emoji:"🧥",color:"#cfd8cf",desc:"Vadderad klubbjacka."},
-  {id:8,price:120,cat:"Kläder",name:"Mössa",emoji:"🧢",color:"#f0e0cc",desc:"Varm mössa med klubbmärke.",sizes:["One size"]},
-  {id:9,price:150,cat:"Material",name:"Fotboll storlek 3",emoji:"⚽",color:"#e3ecd9",desc:"Till de yngsta lagen."},
-  {id:10,price:180,cat:"Material",name:"Fotboll storlek 4",emoji:"⚽",color:"#e3ecd9",desc:"Till mellanåldrarna."},
-  {id:11,price:200,cat:"Material",name:"Fotboll storlek 5",emoji:"⚽",color:"#e3ecd9",desc:"Standardboll för 11-mot-11."},
-  {id:12,price:100,cat:"Material",name:"Koner",emoji:"🔶",color:"#f5dcc2",desc:"Markeringskoner."},
-  {id:13,price:250,cat:"Material",name:"Träningsvästar",emoji:"🦺",color:"#f1efc2",desc:"Väst för lagindelning."},
-  {id:14,price:300,cat:"Material",name:"Målvaktshandskar",emoji:"🧤",color:"#d9dff2",desc:"Handskar med grepp.",sizes:["5","6","7","8","9","10"]},
-  {id:15,price:350,cat:"Material",name:"Första hjälpen-väska",emoji:"🩹",color:"#f2d3d3",desc:"Väska med grundutrustning."},
-  {id:16,price:80,cat:"Material",name:"Bollpump",emoji:"💨",color:"#d6e6ea",desc:"Pump med nål."}
-];
-let PRODUKTER = STANDARD;   // ersätts av produkterna i databasen när de finns (redigeras i Admin)
-/* ======================= */
+/* ====== Samma värden som i index.html ====== */
+const SUPABASE_URL = "https://sjuwuhgbqzdwmtslljti.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_yRmBBnp4TYRmcA8jIQmNDw_vpWWkEdI";
+const EMAILJS_PUBLIC_KEY = "vywZpVyUm-PRw0TS9";
+const EMAILJS_SERVICE_ID = "service_qq1rwdt";
+const EMAILJS_STATUS_TEMPLATE_ID = "template_s3ftyg9";   // <-- ID på den NYA mejlmallen för orderstatus (emailjs.com > Email Templates)
+const MOTTAGARE = "jacobeliasson@hotmail.com";   // kansliets mejl (får kopia)
+const FORENING = "Skabersjö IF";
+const BUTIK = "Jacks Sport";   // sporthandlaren, visas i rubriken
+const UPPHAMTNING = "";   // valfri rad i mejlet, t.ex. "Hämtas hos Sportbutiken, Storgatan 1, vardagar 10–17."
+/* =========================================== */
 
 const $ = id => document.getElementById(id);
-const cart = [];           // {pid, size, q}
-let cat = "Alla", cur = null, curSize = "", curQty = 1;
-const sizesOf = p => p.cat === "Kläder" ? (p.sizes || KLADSTORLEKAR) : (p.sizes || []);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const q = new URLSearchParams(location.search), O = q.get('o') || '', K = q.get('k') || '';
+let order = null, saved = '', comment = '';   // saved = ikryssade artiklar (id) som senast sparats
+
+const rpc = (fn, args) => fetch(SUPABASE_URL + '/rest/v1/rpc/' + fn, {
+  method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY }, body: JSON.stringify(args)
+}).then(async r => { if (!r.ok) throw new Error(await r.text()); return r.json(); });
+
+const label = i => i.qty + ' st – ' + i.name + (i.size ? ' (' + i.size + ')' : '');
+const checked = () => [...document.querySelectorAll('#items input:checked')].map(x => +x.value);
+const key = a => a.slice().sort((x, y) => x - y).join(',');
+
+function show(o){
+  order = o; $('msg').hidden = true; $('order').hidden = false;
+  const d = new Date(o.created_at).toLocaleDateString('sv-SE');
+  $('info').innerHTML = '<dt>Order</dt><dd>#' + esc(o.order_no) + '</dd><dt>Lagd</dt><dd>' + d + '</dd><dt>Från</dt><dd>' + esc(o.name) + ', ' + esc(o.team) + '</dd><dt>Kontakt</dt><dd>' + esc(o.contact) + '</dd>' + (o.note ? '<dt>Kommentar</dt><dd>' + esc(o.note) + '</dd>' : '');
+  $('items').innerHTML = o.items.map(i => '<label class="it"><input type="checkbox" value="' + i.id + '"' + (i.ready ? ' checked' : '') + '><span><b>' + esc(label(i)) + '</b><span class="m">' + (i.qty * i.price).toLocaleString('sv-SE') + ' kr</span></span></label>').join('');
+  saved = key(o.items.filter(i => i.ready).map(i => i.id)); changed();
+}
+function changed(){ $('save').disabled = key(checked()) === saved && !$('cmt').value.trim(); }
+$('items').addEventListener('change', changed); $('cmt').addEventListener('input', changed);
+$('all').onclick = () => { const b = [...document.querySelectorAll('#items input')], on = b.some(x => !x.checked); b.forEach(x => x.checked = on); changed(); };
+
 const kr = n => n.toLocaleString('sv-SE') + ' kr';
-const byId = id => PRODUKTER.find(p => p.id === id);
-const art = (p, cls) => p.img ? '<img src="'+p.img+'" alt="'+p.name+'">' : p.emoji;
-
-function nyttId(){ const a = new Uint32Array(1); crypto.getRandomValues(a); return String(a[0] % 100000000).padStart(8,'0'); }
-
-function renderChips(){
-  $('chips').innerHTML = ["Alla","Kläder","Material"].map(c => '<button type="button" class="chip" aria-pressed="'+(c===cat)+'" data-c="'+c+'">'+c+'</button>').join('');
+const allReady = () => order.items.every(i => i.ready);
+const intro = () => !order.items.some(i => i.ready) ? 'Information om din beställning' : allReady() ? 'Din beställning är klar för upphämtning hos ' + BUTIK : 'Delar av din beställning är klara för upphämtning hos ' + BUTIK;
+/* Bara själva statusuppdateringen: rubrik, ordernummer och status per artikel */
+function mailBody(){
+  const f = 'font-family:Arial,Helvetica,sans-serif;', td = 'padding:12px 8px;border-bottom:1px solid #e3e3e3;' + f;
+  const rows = order.items.map(i => '<tr><td style="'+td+'font-size:15px;color:#111">'+i.qty+' st – '+esc(i.name)+(i.size?' ('+esc(i.size)+')':'')+'</td><td style="'+td+'font-size:14px;font-weight:700;text-align:right;white-space:nowrap;color:'+(i.ready?'#1f7a3d':'#888')+'">'+(i.ready?'✔ Klar för upphämtning':'Ej klar ännu')+'</td></tr>').join('');
+  return '<h2 style="margin:0 0 4px;font-size:22px;'+f+'color:#1f7a3d">'+intro()+'</h2><p style="margin:0 0 20px;font-size:14px;color:#666;'+f+'">Order #'+esc(order.order_no)+'</p>' +
+    '<table style="width:100%;max-width:560px;border-collapse:collapse"><tbody>' + rows + '</tbody></table>' +
+    (comment ? '<p style="margin:20px 0 4px;font-size:13px;color:#666;'+f+'">Meddelande från sporthandlaren</p><p style="margin:0;font-size:15px;color:#111;'+f+'">' + esc(comment).replace(/\n/g, '<br>') + '</p>' : '') +
+    (UPPHAMTNING ? '<p style="margin:20px 0 0;font-size:15px;color:#111;'+f+'">' + esc(UPPHAMTNING) + '</p>' : '');
 }
-$('chips').addEventListener('click', e => { const c = e.target.dataset.c; if (c){ cat = c; renderChips(); renderGrid(); } });
-
-function renderGrid(){
-  $('grid').innerHTML = PRODUKTER.filter(p => cat === "Alla" || p.cat === cat).map(p => {
-    const n = cart.filter(i => i.pid === p.id).reduce((s,i) => s+i.q, 0);
-    return '<button type="button" class="p" data-id="'+p.id+'"><div class="ph" style="background:'+p.color+'">'+art(p)+(p.img?'':'<small>Bild kommer</small>')+(n?'<span class="tag">'+n+' i beställning</span>':'')+'</div><div class="pi"><b>'+p.name+'</b><span>'+p.cat+' · '+kr(p.price)+'</span></div></button>';
-  }).join('');
+function mailText(){
+  return intro() + ' (order #' + order.order_no + ')\n\n' + order.items.map(i => (i.ready ? '[KLAR]    ' : '[EJ KLAR] ') + label(i)).join('\n') + (comment ? '\n\nMeddelande från sporthandlaren: ' + comment : '') + (UPPHAMTNING ? '\n\n' + UPPHAMTNING : '');
 }
-$('grid').addEventListener('click', e => { const b = e.target.closest('.p'); if (b) openProd(byId(+b.dataset.id)); });
-
-function openProd(p){
-  cur = p; curSize = ""; curQty = 1;
-  $('pName').textContent = p.name; $('pDesc').textContent = p.desc; $('pPrice').textContent = kr(p.price);
-  const im = $('pImg'); im.style.background = p.color; im.innerHTML = art(p);
-  const s = sizesOf(p);
-  $('sizeBox').hidden = !s.length;
-  if (s.length === 1) curSize = s[0];
-  $('sizes').innerHTML = s.map(x => '<button type="button" class="sz" aria-pressed="'+(x===curSize)+'">'+x+'</button>').join('');
-  $('pQty').textContent = 1; $('pErr').textContent = '';
-  $('prodDlg').showModal();
-}
-$('sizes').addEventListener('click', e => {
-  const b = e.target.closest('.sz'); if (!b) return;
-  curSize = b.textContent;
-  [...$('sizes').children].forEach(x => x.setAttribute('aria-pressed', x === b));
-});
-$('pMinus').onclick = () => { curQty = Math.max(1, curQty-1); $('pQty').textContent = curQty; };
-$('pPlus').onclick  = () => { curQty = Math.min(99, curQty+1); $('pQty').textContent = curQty; };
-$('pClose').onclick = () => $('prodDlg').close();
-$('pAdd').onclick = () => {
-  if (sizesOf(cur).length && !curSize){ $('pErr').textContent = 'Välj storlek först.'; return; }
-  const ex = cart.find(i => i.pid === cur.id && i.size === curSize);
-  if (ex) ex.q += curQty; else cart.push({pid:cur.id, size:curSize, q:curQty});
-  $('prodDlg').close(); update();
-};
-
-function update(){
-  $('count').textContent = cart.reduce((s,i) => s+i.q, 0);
-  renderGrid(); renderCart();
-}
-
-const total = () => cart.reduce((s,i) => s + i.q*byId(i.pid).price, 0);
-function itemsText(){
-  const W = 40, line = '-'.repeat(W);
-  const rows = cart.map(i => { const p = byId(i.pid), l = i.q + ' st × ' + kr(p.price), r = kr(i.q*p.price);
-    return p.name + (i.size ? ', stl ' + i.size : '') + '\n  ' + l + ' '.repeat(Math.max(2, W-2-l.length-r.length)) + r; });
-  const t = 'Totalt', tv = kr(total());
-  return line + '\n' + rows.join('\n\n') + '\n' + line + '\n' + t + ' '.repeat(Math.max(2, W-t.length-tv.length)) + tv;
-}
-function itemsHtml(){
-  const td = 'padding:10px 8px;border-bottom:1px solid #e3e3e3;', th = 'padding:8px;border-bottom:2px solid #222;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#555;';
-  const rows = cart.map(i => { const p = byId(i.pid);
-    return '<tr><td style="'+td+'">'+i.q+' st</td><td style="'+td+'">'+p.name+'</td><td style="'+td+'">'+(i.size||'–')+'</td><td style="'+td+'text-align:right;white-space:nowrap">'+kr(p.price)+'</td><td style="'+td+'text-align:right;white-space:nowrap">'+kr(i.q*p.price)+'</td></tr>'; }).join('');
-  return '<table style="width:100%;max-width:560px;border-collapse:collapse;font:14px Arial,Helvetica,sans-serif;color:#111">'+
-    '<thead><tr><th style="'+th+'text-align:left">Antal</th><th style="'+th+'text-align:left">Artikel</th><th style="'+th+'text-align:left">Storlek</th><th style="'+th+'text-align:right">À-pris</th><th style="'+th+'text-align:right">Summa</th></tr></thead>'+
-    '<tbody>'+rows+'</tbody>'+
-    '<tfoot><tr><td colspan="4" style="padding:12px 8px;text-align:right;font-weight:700;font-size:16px">Totalt</td><td style="padding:12px 8px;text-align:right;font-weight:700;font-size:16px;white-space:nowrap">'+kr(total())+'</td></tr></tfoot></table>';
-}
-function renderCart(){
-  const box = $('items');
-  if (!cart.length){ box.innerHTML = '<p class="empty">Din beställning är tom. Välj något i shopen.</p>'; $('formBox').hidden = true; return; }
-  $('formBox').hidden = false;
-  box.innerHTML = cart.map((i,k) => { const p = byId(i.pid);
-    return '<div class="ci"><div class="th" style="background:'+p.color+'">'+art(p)+'</div><div><b>'+p.name+'</b><small>'+(i.size?'Storlek '+i.size+' · ':'')+kr(p.price)+'/st</small><button type="button" class="rm" data-k="'+k+'" data-a="rm">Ta bort</button></div><div class="qty"><button type="button" data-k="'+k+'" data-a="-" aria-label="Minska">−</button><span>'+i.q+'</span><button type="button" data-k="'+k+'" data-a="+" aria-label="Öka">+</button></div></div>';
-  }).join('') + '<div class="tot"><span>Totalt</span><b>'+kr(total())+'</b></div>';
-}
-$('items').addEventListener('click', e => {
-  const b = e.target.closest('button'); if (!b) return;
-  const i = cart[+b.dataset.k], a = b.dataset.a;
-  if (a === 'rm' || (a === '-' && i.q === 1)) cart.splice(+b.dataset.k, 1);
-  else if (a === '-') i.q--; else if (a === '+') i.q = Math.min(99, i.q+1);
-  update();
-});
-
-function showView(v){ ['cartView','doneView','sendView'].forEach(x => $(x).hidden = x !== v); $('cTitle').textContent = v === 'cartView' ? 'Din beställning' : 'Beställning'; }
-$('cartBtn').onclick = () => { showView('cartView'); renderCart(); $('cartDlg').showModal(); };
-$('cClose').onclick = () => $('cartDlg').close();
-[$('prodDlg'),$('cartDlg')].forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
-
-function buildText(){
-  const L = ['Beställning från ' + $('name').value.trim(), 'Lag/grupp: ' + $('team').value.trim(), 'Kontakt: ' + $('contact').value.trim(), '', 'Artiklar:'];
-  L.push(itemsText());
-  const note = $('note').value.trim();
-  if (note) L.push('', 'Kommentar: ' + note);
-  return L.join('\n');
-}
-
-$('make').addEventListener('click', () => {
-  const err = $('err'); err.textContent = '';
-  if (!$('name').value.trim() || !$('team').value.trim() || !/^\S+@\S+\.\S+$/.test($('contact').value.trim())){ err.textContent = 'Fyll i namn, lag och en giltig e-postadress.'; return; }
-  if (!cart.length){ err.textContent = 'Lägg till minst en artikel.'; return; }
-  const orderId = nyttId();
-  const text = 'Beställnings-ID: ' + orderId + '\n\n' + buildText();
-  const subject = 'Beställning ' + FORENING + ' – ' + $('team').value.trim() + ' – #' + orderId;
-  $('preview').textContent = text; $('toShow').textContent = MOTTAGARE;
-  $('mailBtn').href = 'mailto:' + MOTTAGARE + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(text);
-  const btn = $('make'); btn.disabled = true; btn.textContent = 'Skickar…';
-  if ($('botcheck').checked){ btn.disabled = false; btn.textContent = 'Skicka beställning'; return; }
-  const contact = $('contact').value.trim();
-  const token = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2,'0')).join('');
-  const dealerLink = new URL('handlare.html?o=' + orderId + '&k=' + token, location.href).href;   // länk för sporthandlaren
-  const mail = fetch('https://api.emailjs.com/api/v1.0/email/send', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      service_id: EMAILJS_SERVICE_ID, template_id: EMAILJS_TEMPLATE_ID, user_id: EMAILJS_PUBLIC_KEY,
-      template_params: {
-        subject, order_id: orderId, name: $('name').value.trim(), team: $('team').value.trim(), contact,
-        note: $('note').value.trim() || '–', message: itemsHtml() + '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0"><tr><td align="center" bgcolor="#1f7a3d" style="border-radius:8px"><a href="' + dealerLink + '" style="display:inline-block;padding:16px 36px;font:bold 18px Arial,Helvetica,sans-serif;color:#ffffff;text-decoration:none;border-radius:8px">Uppdatera orderstatus</a></td></tr></table>', message_text: itemsText() + '\n\nUppdatera orderstatus: ' + dealerLink, dealer_link: dealerLink,
-        reply_to: contact.includes('@') ? contact : MOTTAGARE
-      }
-    })
+function sendMail(){
+  if (!EMAILJS_STATUS_TEMPLATE_ID) return Promise.reject(new Error('Mejlmallen är inte inställd i handlare.html'));
+  const email = /^\S+@\S+\.\S+$/.test(order.contact) ? order.contact : MOTTAGARE;
+  return fetch('https://api.emailjs.com/api/v1.0/email/send', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ service_id: EMAILJS_SERVICE_ID, template_id: EMAILJS_STATUS_TEMPLATE_ID, user_id: EMAILJS_PUBLIC_KEY,
+      template_params: { to_email: email, cc_email: email === MOTTAGARE ? '' : MOTTAGARE, reply_to: MOTTAGARE,
+        subject: 'Beställning ' + FORENING + ' – ' + order.team + ' – #' + order.order_no + (!order.items.some(i => i.ready) ? ' – information om din beställning' : allReady() ? ' – klar för upphämtning' : ' – delar klara för upphämtning'),
+        order_id: order.order_no, name: order.name, team: order.team, contact: order.contact, note: order.note || '–',
+        message: mailBody(), message_text: mailText() } })
   }).then(async r => { if (!r.ok) throw new Error(await r.text() || r.status); });
-  Promise.allSettled([sparaDb(orderId, contact, token), mail]).then(([d, m]) => {
-    if (d.status === 'fulfilled' || m.status === 'fulfilled'){ $('doneId').textContent = orderId; showView('doneView'); }
-    else { const e = m.reason; $('reason').textContent = 'Felorsak: ' + (e && e.message ? e.message : e); showView('sendView'); }
-  }).finally(() => { btn.disabled = false; btn.textContent = 'Skicka beställning'; });
-});
-
-/* Sparar beställningen i databasen (Supabase) så att den syns i rapporterna i admin.html */
-function sparaDb(orderId, contact, token){
-  if (!SUPABASE_URL) return Promise.reject(new Error('Databas ej konfigurerad'));
-  const order = {order_no:orderId, dealer_token:token, name:$('name').value.trim(), team:$('team').value.trim(), contact, note:$('note').value.trim(),
-    items: cart.map(i => { const p = byId(i.pid); return {product_id:p.id, product_name:p.name, category:p.cat, size:i.size, qty:i.q, unit_price:p.price}; })};
-  return fetch(SUPABASE_URL + '/rest/v1/rpc/place_order', {
-    method:'POST', headers:{'Content-Type':'application/json', apikey:SUPABASE_ANON_KEY}, body: JSON.stringify({p:order})
-  }).then(async r => { if (!r.ok) throw new Error(await r.text()); });
 }
+function mailDone(){ $('retry').hidden = true; $('cmt').value = ''; comment = ''; changed(); $('res').className = 'ok'; $('res').textContent = 'Status sparad och mejl skickat till ' + order.name + ' och kansliet.'; }
+function mailFail(e){ $('res').className = 'err'; $('res').textContent = 'Status är sparad, men mejlet kunde inte skickas: ' + (e.message || e); $('retry').hidden = false; }
 
-$('again').onclick = () => location.reload();
-$('back').onclick = () => showView('cartView');
-$('copy').addEventListener('click', async () => {
-  const msg = $('copyMsg');
-  try { await navigator.clipboard.writeText($('preview').textContent); msg.textContent = 'Kopierat! Klistra in i ett mejl till ' + MOTTAGARE + '.'; }
-  catch(e){ const r = document.createRange(); r.selectNodeContents($('preview')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); msg.textContent = 'Texten är markerad – kopiera den manuellt.'; }
-});
-
-function unlock(){ $('gate').hidden = true; $('shop').hidden = false; }
-function tryCode(){
-  if ($('code').value.trim().toLowerCase() === KLUBBKOD.toLowerCase()){
-    try { sessionStorage.setItem('klubbkod','ok'); } catch(e){}
-    unlock();
-  } else { $('codeErr').textContent = 'Fel klubbkod. Fråga föreningen om rätt kod.'; $('code').select(); }
-}
-$('enter').onclick = tryCode;
-$('code').addEventListener('keydown', e => { if (e.key === 'Enter') tryCode(); });
-try { if (sessionStorage.getItem('klubbkod') === 'ok') unlock(); } catch(e){}
-
-/* Hämtar produkterna från databasen (redigeras via Admin). Faller tillbaka på listan ovan. */
-function loadProdukter(){
-  if (!SUPABASE_URL) return;
-  fetch(SUPABASE_URL + '/rest/v1/products?select=*&active=eq.true&order=id', {headers:{apikey:SUPABASE_ANON_KEY}})
-    .then(r => r.ok ? r.json() : []).then(d => { if (d.length){ PRODUKTER = d.map(p => ({...p, desc:p.descr||''})); renderGrid(); } }).catch(() => {});
-}
-$('adminBtn').onclick = () => {
-  if (!location.hash.startsWith('#admin')) history.replaceState(null, '', '#admin');   // omladdning stannar kvar i admin
-  if (window.openAdmin) return openAdmin();
-  const sc = document.createElement('script'); sc.src = 'admin.js?t=' + Date.now(); sc.onload = () => openAdmin(); document.head.appendChild(sc);   // ?t= gör att webbläsaren alltid hämtar senaste admin.js
+$('save').onclick = async () => {
+  const b = $('save'); b.disabled = true; b.textContent = 'Sparar…'; $('res').textContent = ''; $('retry').hidden = true; comment = $('cmt').value.trim();
+  try { show(await rpc('dealer_set_ready', { p_order: O, p_token: K, p_ready: checked() })); }
+  catch (e) { $('res').className = 'err'; $('res').textContent = 'Kunde inte spara: ' + (e.message || e); b.textContent = 'Uppdatera orderstatus'; changed(); return; }
+  b.textContent = 'Uppdatera orderstatus';
+  if (!order.items.some(i => i.ready) && !comment){ $('res').className = 'm'; $('res').textContent = 'Sparat. Inget är markerat som klart, så inget mejl skickades.'; return; }
+  try { await sendMail(); mailDone(); } catch (e) { mailFail(e); }
 };
+$('retry').onclick = () => sendMail().then(mailDone, mailFail);
 
-renderChips(); update(); loadProdukter();
-if (location.hash.startsWith('#admin')) $('adminBtn').click();   // stannar kvar i admin vid omladdning
+(async () => {
+  try { const o = await rpc('dealer_order', { p_order: O, p_token: K }); if (!o) throw 0; show(o); }
+  catch (e) { $('msg').className = 'err'; $('msg').textContent = 'Hittar inte beställningen. Kontrollera att du öppnar hela länken från mejlet.'; }
+})();
 </script>
 </body>
 </html>
