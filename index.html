@@ -353,6 +353,7 @@ $('adminBtn').onclick = () => {
 };
 
 renderChips(); update(); loadProdukter();
+if (location.hash.startsWith('#admin')) $('adminBtn').click();   // stannar kvar i admin vid omladdning
 </script>
 </body>
 </html>
