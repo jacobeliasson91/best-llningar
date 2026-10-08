@@ -26,13 +26,15 @@ const CSS = `#adminRoot .w{max-width:900px;margin:0 auto;padding:16px 16px 60px}
 
 function load(src){ return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
 
+const closeAdmin = () => { root.hidden = true; history.replaceState(null, '', location.pathname + location.search); };
+
 window.openAdmin = async function(){
   if (!root){
     root = $('adminRoot'); const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     try { await load('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js'); sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
     catch (e) { root.innerHTML = '<div class="w"><p class="e">Kunde inte starta (kontrollera SUPABASE_URL och SUPABASE_ANON_KEY i index.html).</p><button type="button" onclick="adminRoot.hidden=true">Stäng</button></div>'; root.hidden = false; return; }
   }
-  root.hidden = false;
+  root.hidden = false; if (!location.hash.startsWith('#admin')) history.replaceState(null, '', '#admin');
   const { data } = await sb.auth.getSession();
   data.session ? shell(data.session.user.email) : login();
 };
@@ -43,7 +45,7 @@ function login(){
   <div style="margin-bottom:12px"><label for="apw">Lösenord</label><input id="apw" type="password" autocomplete="current-password"></div>
   <button type="button" id="ago" class="primary" style="width:100%">Logga in</button><p class="e" id="aerr" role="alert"></p>
   <button type="button" id="acl" style="width:100%">Tillbaka till butiken</button></div></div>`;
-  $('acl').onclick = () => root.hidden = true;
+  $('acl').onclick = closeAdmin;
   $('apw').addEventListener('keydown', e => { if (e.key === 'Enter') $('ago').click(); });
   $('ago').onclick = async () => {
     const { data, error } = await sb.auth.signInWithPassword({ email: $('aem').value.trim(), password: $('apw').value });
@@ -55,11 +57,13 @@ function shell(email){
   root.innerHTML = `<div class="w"><div class="top"><h1>Admin</h1><span class="tabs" style="display:flex;gap:8px">
   <button type="button" id="tR" aria-pressed="true">Rapporter</button><button type="button" id="tP" aria-pressed="false">Produkter</button></span>
   <button type="button" id="aout">Logga ut</button><button type="button" id="aclose">Stäng</button></div><div id="aview"></div></div>`;
-  $('aclose').onclick = () => root.hidden = true;
+  $('aclose').onclick = closeAdmin;
   $('aout').onclick = async () => { await sb.auth.signOut(); login(); };
-  $('tR').onclick = () => { tab('R'); reports(); }; $('tP').onclick = () => { tab('P'); products(); };
   const tab = t => { $('tR').setAttribute('aria-pressed', t === 'R'); $('tP').setAttribute('aria-pressed', t === 'P'); };
-  reports();
+  /* flik sparas i adressen (#admin/produkter), så en omladdning stannar kvar på samma sida */
+  const go = t => { tab(t); history.replaceState(null, '', t === 'P' ? '#admin/produkter' : '#admin/rapporter'); t === 'P' ? products() : reports(); };
+  $('tR').onclick = () => go('R'); $('tP').onclick = () => go('P');
+  go(location.hash === '#admin/produkter' ? 'P' : 'R');
 }
 
 /* ---------- RAPPORTER ---------- */
