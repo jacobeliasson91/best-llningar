@@ -53,6 +53,7 @@ const EMAILJS_SERVICE_ID = "service_qq1rwdt";
 const EMAILJS_STATUS_TEMPLATE_ID = "template_s3ftyg9";   // <-- ID på den NYA mejlmallen för orderstatus (emailjs.com > Email Templates)
 const MOTTAGARE = "jacobeliasson@hotmail.com";   // kansliets mejl (får kopia)
 const FORENING = "Skabersjö IF";
+const BUTIK = "Jacks Sport";   // sporthandlaren, visas i rubriken
 const UPPHAMTNING = "";   // valfri rad i mejlet, t.ex. "Hämtas hos Sportbutiken, Storgatan 1, vardagar 10–17."
 /* =========================================== */
 
@@ -82,7 +83,7 @@ $('all').onclick = () => { const b = [...document.querySelectorAll('#items input
 
 const kr = n => n.toLocaleString('sv-SE') + ' kr';
 const allReady = () => order.items.every(i => i.ready);
-const intro = () => !order.items.some(i => i.ready) ? 'Information om din beställning' : allReady() ? 'Din beställning är klar för upphämtning' : 'Delar av din beställning är klara för upphämtning';
+const intro = () => !order.items.some(i => i.ready) ? 'Information om din beställning' : allReady() ? 'Din beställning är klar för upphämtning hos ' + BUTIK : 'Delar av din beställning är klara för upphämtning hos ' + BUTIK;
 /* Bara själva statusuppdateringen: rubrik, ordernummer och status per artikel */
 function mailBody(){
   const f = 'font-family:Arial,Helvetica,sans-serif;', td = 'padding:12px 8px;border-bottom:1px solid #e3e3e3;' + f;
