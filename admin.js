@@ -26,7 +26,7 @@ const CSS = `#adminRoot .w{max-width:900px;margin:0 auto;padding:16px 16px 60px}
 
 function load(src){ return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
 
-const closeAdmin = () => { root.hidden = true; history.replaceState(null, '', location.pathname + location.search); };
+const closeAdmin = () => { document.documentElement.classList.remove('adm'); root.hidden = true; history.replaceState(null, '', location.pathname + location.search); };
 
 window.openAdmin = async function(){
   if (!root){
