@@ -4,91 +4,97 @@
 <meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Klubbshop – Skabersjö IF</title>
+<title>Ledarshop – Skabersjö IF</title>
 <script>if (location.hash.indexOf('#admin') === 0) document.documentElement.className += ' adm';</script><!-- visar admin-lagret direkt vid omladdning, så butiken inte blinkar förbi -->
 <style>
-:root{--bg:#f7f7f7;--card:#fff;--ink:#16221a;--mute:#5d6b60;--line:#d9e0da;--accent:#1f7a3d;--accent-ink:#fff;--shade:rgba(10,20,12,.5);
+:root{--bg:#f7f7f7;--card:#fff;--ink:#1a1a1a;--mute:#6b6b6b;--line:#e2e2e2;--accent:#00703c;--accent-ink:#fff;--shade:rgba(10,20,12,.5);
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101811;--card:#192319;--ink:#e8efe9;--mute:#9fb0a2;--line:#2c3a2e;--accent:#3fae65;--accent-ink:#06130a}}
-:root[data-theme="dark"]{--bg:#101811;--card:#192319;--ink:#e8efe9;--mute:#9fb0a2;--line:#2c3a2e;--accent:#3fae65;--accent-ink:#06130a}
+/* Admin behåller sin egen palett (och mörkt läge); butiken är alltid ljus */
+#adminRoot{--bg:#f3f5f1;--card:#fff;--ink:#16221a;--mute:#5d6b60;--line:#d9e0da}
+@media (prefers-color-scheme:dark){#adminRoot{--bg:#101811;--card:#192319;--ink:#e8efe9;--mute:#9fb0a2;--line:#2c3a2e}}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
-.bar{max-width:1100px;margin:0 auto;padding:12px 16px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
-.bar h1{text-align:center}.bar>span:first-child{min-width:70px}.bar #cartBtn{justify-self:end}
-@media (max-width:560px){.bar{grid-template-columns:auto 1fr auto}}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--accent);color:#fff}
+.bar{max-width:1100px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:14px}
+.bar .logo{height:44px;width:auto;display:block}
+.bar h1{color:#fff;font-size:1.75rem;font-weight:700}
 h1{font-size:1.25rem;margin:0;letter-spacing:-.01em}
 .lead{max-width:1100px;margin:0 auto;padding:16px 16px 0;color:var(--mute)}
-main{max-width:1100px;margin:0 auto;padding:12px 16px 48px}
-button,a.btn{font:inherit;cursor:pointer;border-radius:8px;padding:10px 14px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+main{max-width:1100px;margin:0 auto;padding:24px 16px 48px}
+button,a.btn{font:inherit;cursor:pointer;border-radius:4px;padding:10px 14px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.p:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
 a.btn{display:inline-block;text-decoration:none}
-#adminBtn{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);left:max(12px,calc((100vw - 1100px) / 2 + 16px));z-index:6;padding:6px 12px;font-size:.85rem;background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
 #adminRoot{display:none;position:fixed;inset:0;z-index:20;background:var(--bg);overflow:auto}
 html.adm{overflow:hidden}   /* låser sidan bakom admin, så bara admin-lagret har en scrollbar */
 .adm #adminRoot{display:block}
 #adminRoot:empty::before{content:"Laddar…";display:block;padding-top:40vh;text-align:center;color:var(--mute)}
-#cartBtn{position:relative}
-#count{background:var(--accent);color:var(--accent-ink);border-radius:99px;font-size:.75rem;padding:1px 7px;margin-left:6px;font-weight:700}
-.chips{display:flex;gap:8px;margin:8px 0 16px;overflow-x:auto}
-.chip{border-radius:99px;white-space:nowrap}
-.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-@media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr);gap:16px}}
+#cartBtn{position:relative;margin-left:auto;background:transparent;border:0;color:#fff;padding:6px 10px 6px 6px;display:flex}
+#cartBtn:focus-visible{outline-color:#fff}
+#count{position:absolute;top:-4px;right:-2px;min-width:22px;height:22px;padding:0 5px;border-radius:99px;background:#e5001c;color:#fff;font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+.tabs{background:#efefef;border-bottom:1px solid #e0e0e0}
+.tabsin{max-width:1100px;margin:0 auto;padding:0 16px;display:flex;align-items:stretch}
+.chips{display:flex;overflow-x:auto}
+.tabs button{border:0;border-right:2px solid #dcdcdc;border-radius:0;background:transparent;color:#8a8a8a;font-size:.9rem;font-weight:600;padding:13px 22px;white-space:nowrap}
+.chip:first-child{border-left:2px solid #dcdcdc!important}
+.chip[aria-pressed=true]{color:#3a3a3a;text-decoration:underline;text-underline-offset:5px}
+#adminBtn{margin-left:auto;flex:none;border-left:2px solid #dcdcdc!important}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px 14px}
+@media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr);gap:24px 18px}}
 @media(min-width:900px){.grid{grid-template-columns:repeat(4,1fr)}}
-.p{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;text-align:left;padding:0}
-.p:hover{border-color:var(--accent)}
-.ph{aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative}
-.ph img{width:100%;height:100%;object-fit:cover}
+.p{background:transparent;border:0;border-radius:0;overflow:visible;cursor:pointer;display:flex;flex-direction:column;text-align:left;padding:0;color:var(--ink)}
+.p:hover b{text-decoration:underline}
+.ph{aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative;background:#efefef;border-radius:5px;overflow:hidden}
+.ph img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply}
 .ph small{position:absolute;bottom:8px;left:10px;font-size:.7rem;color:var(--mute)}
-.pi{padding:10px 12px 12px}
-.pi b{display:block;font-weight:600}
-.pi span{color:var(--mute);font-size:.85rem}
-.pi .lg{display:block;margin-top:2px;color:#d97706;font-weight:600}
+.pi{padding:12px 12px 0}
+.pi b{display:block;font-weight:700;color:#000}
+.pi span{display:block;color:#6b6b6b;font-size:.95rem}
+.pi .lg{margin-top:3px;color:#e07b00;font-style:italic;font-size:.75rem;font-weight:400}
 .tag{position:absolute;top:8px;right:8px;background:var(--accent);color:var(--accent-ink);border-radius:99px;font-size:.75rem;padding:2px 8px;font-weight:700}
-dialog{border:0;padding:0;background:var(--card);color:var(--ink);border-radius:14px;width:min(520px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto}
+dialog{border:0;padding:0;background:var(--card);color:var(--ink);border-radius:7px;width:min(520px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto}
 dialog::backdrop{background:var(--shade)}
 .dh{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card)}
 .dh h2{margin:0;font-size:1.1rem}
 .db{padding:16px}
-.big{aspect-ratio:4/3;border-radius:10px;font-size:5rem;display:flex;align-items:center;justify-content:center;margin-bottom:14px;overflow:hidden}
-.big img{width:100%;height:100%;object-fit:cover}
+.big{aspect-ratio:4/3;border-radius:5px;background:#efefef;font-size:5rem;display:flex;align-items:center;justify-content:center;margin-bottom:14px;overflow:hidden}
+.big img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply}
 .sizes{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px}
 .sz{min-width:52px;text-align:center}
 .sz[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 label{display:block;font-size:.85rem;color:var(--mute);margin-bottom:4px}
-input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:10px}
 .field{margin-bottom:12px}
 .qty{display:inline-flex;align-items:center;gap:4px}
 .qty button{padding:6px 12px}
 .qty span{min-width:28px;text-align:center}
 .ci{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
 .ci:first-child{border-top:0}
-.th{width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;overflow:hidden}
+.th{width:56px;height:56px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;overflow:hidden}
 .th img{width:100%;height:100%;object-fit:cover}
 .ci small{color:var(--mute);display:block}
 .rm{border:0;background:none;color:var(--mute);padding:4px 0;font-size:.85rem;text-decoration:underline}
 h3{font-size:1rem;margin:20px 0 10px}
 .err{color:#c0392b;font-size:.9rem;margin:8px 0 0;min-height:1.2em}
-pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;font:.9rem/1.5 ui-monospace,Menlo,monospace;margin:0 0 12px}
+pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:12px;font:.9rem/1.5 ui-monospace,Menlo,monospace;margin:0 0 12px}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 .tot{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:12px;margin-top:4px;font-size:1.1rem}
 .empty{color:var(--mute);text-align:center;padding:24px 0}
-.gate{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:16px}
-.gate .box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;width:min(380px,100%)}
+.gate{min-height:calc(100dvh - 130px);display:flex;align-items:center;justify-content:center;padding:16px}
+.gate .box{background:var(--card);border:1px solid var(--line);border-radius:7px;padding:24px;width:min(380px,100%)}
 .gate h1{margin-bottom:6px}
 .gate p{color:var(--mute);margin:0 0 16px}
 [hidden]{display:none!important}
 </style>
 </head>
 <body>
-<button type="button" id="adminBtn">Admin</button>
+<header><div class="bar"><img class="logo" src="emblem.png" alt="Skabersjö IF"><h1>Ledarshop</h1><button id="cartBtn" type="button" aria-label="Din beställning" hidden><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8h20l-2 11a2 2 0 0 1-2 1.7H6a2 2 0 0 1-2-1.7z"/><path d="M8 8l4-5M16 8l-4-5M9 12v4M12 12v4M15 12v4"/></svg><span id="count" hidden>0</span></button></div></header>
+<nav class="tabs"><div class="tabsin"><div class="chips" id="chips" hidden></div><button type="button" id="adminBtn">Admin</button></div></nav>
 <div id="adminRoot"></div>
 <div class="gate" id="gate">
   <div class="box">
-    <h1>Klubbshop</h1>
+    <h1>Ledarshop</h1>
     <p>Skriv in klubbkoden för att komma till beställningen.</p>
     <div class="field"><label for="code">Klubbkod</label><input id="code" type="password" autocomplete="off" autocapitalize="off"></div>
     <button type="button" id="enter" class="primary" style="width:100%">Fortsätt</button>
@@ -96,10 +102,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px s
   </div>
 </div>
 <div id="shop" hidden>
-<header><div class="bar"><span></span><h1>Klubbshop</h1><button id="cartBtn" type="button">Din beställning<span id="count">0</span></button></div></header>
-<p class="lead">Välj plagg och material, lägg i beställningen och skicka direkt till föreningen.</p>
 <main>
-  <div class="chips" id="chips"></div>
   <div class="grid" id="grid"></div>
 </main>
 </div>
@@ -208,15 +211,15 @@ $('chips').addEventListener('click', e => { const c = e.target.dataset.c; if (c)
 function renderGrid(){
   $('grid').innerHTML = PRODUKTER.filter(p => cat === "Alla" || p.cat === cat).map(p => {
     const n = cart.filter(i => i.pid === p.id).reduce((s,i) => s+i.q, 0);
-    return '<button type="button" class="p" data-id="'+p.id+'"><div class="ph" style="background:'+p.color+'">'+art(p)+(p.img?'':'<small>Bild kommer</small>')+(n?'<span class="tag">'+n+' i beställning</span>':'')+'</div><div class="pi"><b>'+p.name+'</b><span>'+p.cat+' · '+kr(p.price)+'</span>'+lagerTxt(p)+'</div></button>';
+    return '<button type="button" class="p" data-id="'+p.id+'"><div class="ph'+'"'+(p.img?'':' style="background:'+p.color+'"')+'>'+art(p)+(p.img?'':'<small>Bild kommer</small>')+(n?'<span class="tag">'+n+' i beställning</span>':'')+'</div><div class="pi"><b>'+(p.brand||p.name)+'</b>'+(p.brand?'<span>'+p.name+'</span>':'')+'<span>'+kr(p.price)+'</span>'+lagerTxt(p)+'</div></button>';
   }).join('');
 }
 $('grid').addEventListener('click', e => { const b = e.target.closest('.p'); if (b) openProd(byId(+b.dataset.id)); });
 
 function openProd(p){
   cur = p; curSize = ""; curQty = 1;
-  $('pName').textContent = p.name; $('pDesc').textContent = p.desc; $('pPrice').textContent = kr(p.price);
-  const im = $('pImg'); im.style.background = p.color; im.innerHTML = art(p);
+  $('pName').textContent = (p.brand ? p.brand + ' ' : '') + p.name; $('pDesc').textContent = p.desc; $('pPrice').textContent = kr(p.price);
+  const im = $('pImg'); im.style.background = p.img ? '' : p.color; im.innerHTML = art(p);
   const s = sizesOf(p);
   $('sizeBox').hidden = !s.length;
   if (s.length === 1) curSize = s[0];
@@ -240,7 +243,7 @@ $('pAdd').onclick = () => {
 };
 
 function update(){
-  $('count').textContent = cart.reduce((s,i) => s+i.q, 0);
+  const n = cart.reduce((s,i) => s+i.q, 0); $('count').textContent = n; $('count').hidden = !n;
   renderGrid(); renderCart();
 }
 
@@ -310,7 +313,7 @@ $('make').addEventListener('click', () => {
       service_id: EMAILJS_SERVICE_ID, template_id: EMAILJS_TEMPLATE_ID, user_id: EMAILJS_PUBLIC_KEY,
       template_params: {
         subject, order_id: orderId, name: $('name').value.trim(), team: $('team').value.trim(), contact,
-        note: $('note').value.trim() || '–', message: itemsHtml() + '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0"><tr><td align="center" bgcolor="#1f7a3d" style="border-radius:8px"><a href="' + dealerLink + '" style="display:inline-block;padding:16px 36px;font:bold 18px Arial,Helvetica,sans-serif;color:#ffffff;text-decoration:none;border-radius:8px">Uppdatera orderstatus</a></td></tr></table>', message_text: itemsText() + '\n\nUppdatera orderstatus: ' + dealerLink, dealer_link: dealerLink,
+        note: $('note').value.trim() || '–', message: itemsHtml() + '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0"><tr><td align="center" bgcolor="#00703c" style="border-radius:8px"><a href="' + dealerLink + '" style="display:inline-block;padding:16px 36px;font:bold 18px Arial,Helvetica,sans-serif;color:#ffffff;text-decoration:none;border-radius:8px">Uppdatera orderstatus</a></td></tr></table>', message_text: itemsText() + '\n\nUppdatera orderstatus: ' + dealerLink, dealer_link: dealerLink,
         reply_to: contact.includes('@') ? contact : MOTTAGARE
       }
     })
@@ -339,7 +342,7 @@ $('copy').addEventListener('click', async () => {
   catch(e){ const r = document.createRange(); r.selectNodeContents($('preview')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); msg.textContent = 'Texten är markerad – kopiera den manuellt.'; }
 });
 
-function unlock(){ $('gate').hidden = true; $('shop').hidden = false; }
+function unlock(){ $('gate').hidden = true; $('shop').hidden = false; $('cartBtn').hidden = false; $('chips').hidden = false; }
 function tryCode(){
   if ($('code').value.trim().toLowerCase() === KLUBBKOD.toLowerCase()){
     try { sessionStorage.setItem('klubbkod','ok'); } catch(e){}

@@ -160,7 +160,7 @@ async function products(){
   $('aview').innerHTML = `<div class="c"><div class="ac" style="margin:0 0 8px"><button type="button" id="pnew" class="primary">+ Ny produkt</button>
   ${prods.length ? '' : '<button type="button" id="pimp">Importera produkterna som ligger i koden</button>'}</div>
   <div id="plist">${prods.map(p => `<div class="row"><${p.img ? 'img src="' + esc(p.img) + '" alt=""' : 'div'} class="th">${p.img ? '>' : esc(p.emoji) + '</div>'}
-  <div class="t"><b>${esc(p.name)}</b><span class="m">${esc(p.cat)} · ${kr(p.price)}${p.active ? '' : ' · dold'}</span></div><button type="button" data-e="${p.id}">Redigera</button></div>`).join('') || '<p class="m">Inga produkter i databasen ännu.</p>'}</div></div><div id="pform"></div>`;
+  <div class="t"><b>${p.brand ? esc(p.brand) + ' – ' : ''}${esc(p.name)}</b><span class="m">${esc(p.cat)} · ${kr(p.price)}${p.active ? '' : ' · dold'}</span></div><button type="button" data-e="${p.id}">Redigera</button></div>`).join('') || '<p class="m">Inga produkter i databasen ännu.</p>'}</div></div><div id="pform"></div>`;
   $('pnew').onclick = () => form({ cat: 'Kläder', active: true });
   if ($('pimp')) $('pimp').onclick = importStd;
   $('plist').onclick = e => { const id = e.target.dataset.e; if (id) form(prods.find(p => p.id == id)); };
@@ -172,6 +172,7 @@ async function importStd(){
 function form(p){
   editing = p; newImg = null;
   $('pform').innerHTML = `<div class="c"><h2 style="margin:0 0 12px;font-size:1.1rem">${p.id ? 'Redigera produkt' : 'Ny produkt'}</h2><div class="g">
+  <div><label for="fv">Varumärke</label><input id="fv" value="${esc(p.brand)}" placeholder="t.ex. Adidas"></div>
   <div><label for="fn">Namn</label><input id="fn" value="${esc(p.name)}"></div>
   <div><label for="fc">Kategori</label><select id="fc"><option${p.cat === 'Kläder' ? ' selected' : ''}>Kläder</option><option${p.cat === 'Material' ? ' selected' : ''}>Material</option></select></div>
   <div><label for="fp">Pris (kr)</label><input id="fp" type="number" min="0" inputmode="numeric" value="${p.price == null ? '' : p.price}"></div></div>
@@ -200,7 +201,7 @@ async function save(){
   if (!name) return err('Ange ett namn.'); if (isNaN(price) || price < 0) return err('Ange ett pris i hela kronor.');
   $('fsave').disabled = true; err('Sparar…');
   const sizes = $('fs').value.split(',').map(x => x.trim()).filter(Boolean);
-  const row = { name, cat: $('fc').value, price, descr: $('fd').value.trim(), sizes: sizes.length ? sizes : null, active: $('fa').checked, back_in_stock: $('fb').value || null };
+  const row = { brand: $('fv').value.trim() || null, name, cat: $('fc').value, price, descr: $('fd').value.trim(), sizes: sizes.length ? sizes : null, active: $('fa').checked, back_in_stock: $('fb').value || null };
   try {
     if (newImg){
       const path = Date.now() + '.jpg', up = await sb.storage.from('product-images').upload(path, newImg, { contentType: 'image/jpeg' });

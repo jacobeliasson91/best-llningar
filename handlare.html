@@ -6,8 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Orderstatus – Skabersjö IF</title>
 <style>
-:root{--bg:#f3f5f1;--card:#fff;--ink:#16221a;--mute:#5d6b60;--line:#d9e0da;--accent:#1f7a3d;--accent-ink:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101811;--card:#192319;--ink:#e8efe9;--mute:#9fb0a2;--line:#2c3a2e;--accent:#3fae65;--accent-ink:#06130a}}
+:root{--bg:#f3f5f1;--card:#fff;--ink:#16221a;--mute:#5d6b60;--line:#d9e0da;--accent:#00703c;--accent-ink:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101811;--card:#192319;--ink:#e8efe9;--mute:#9fb0a2;--line:#2c3a2e;--accent:#00703c;--accent-ink:#06130a}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 main{max-width:640px;margin:0 auto;padding:16px 16px 48px}
@@ -87,8 +87,8 @@ const intro = () => !order.items.some(i => i.ready) ? 'Information om din bestä
 /* Bara själva statusuppdateringen: rubrik, ordernummer och status per artikel */
 function mailBody(){
   const f = 'font-family:Arial,Helvetica,sans-serif;', td = 'padding:12px 8px;border-bottom:1px solid #e3e3e3;' + f;
-  const rows = order.items.map(i => '<tr><td style="'+td+'font-size:15px;color:#111">'+i.qty+' st – '+esc(i.name)+(i.size?' ('+esc(i.size)+')':'')+'</td><td style="'+td+'font-size:14px;font-weight:700;text-align:right;white-space:nowrap;color:'+(i.ready?'#1f7a3d':'#888')+'">'+(i.ready?'✔ Klar för upphämtning':'Ej klar ännu')+'</td></tr>').join('');
-  return '<h2 style="margin:0 0 4px;font-size:18px;'+f+'color:#000000">'+intro()+'</h2><p style="margin:0 0 20px;font-size:14px;color:#666;'+f+'">Order #'+esc(order.order_no)+'</p>' +
+  const rows = order.items.map(i => '<tr><td style="'+td+'font-size:15px;color:#111">'+i.qty+' st – '+esc(i.name)+(i.size?' ('+esc(i.size)+')':'')+'</td><td style="'+td+'font-size:14px;font-weight:700;text-align:right;white-space:nowrap;color:'+(i.ready?'#00703c':'#888')+'">'+(i.ready?'✔ Klar för upphämtning':'Ej klar ännu')+'</td></tr>').join('');
+  return '<h2 style="margin:0 0 4px;font-size:22px;'+f+'color:#000000">'+intro()+'</h2><p style="margin:0 0 20px;font-size:14px;color:#666;'+f+'">Order #'+esc(order.order_no)+'</p>' +
     '<table style="width:100%;max-width:560px;border-collapse:collapse"><tbody>' + rows + '</tbody></table>' +
     (comment ? '<p style="margin:20px 0 4px;font-size:13px;color:#666;'+f+'">Meddelande från sporthandlaren</p><p style="margin:0;font-size:15px;color:#111;'+f+'">' + esc(comment).replace(/\n/g, '<br>') + '</p>' : '') +
     (UPPHAMTNING ? '<p style="margin:20px 0 0;font-size:15px;color:#111;'+f+'">' + esc(UPPHAMTNING) + '</p>' : '');
@@ -102,7 +102,7 @@ function sendMail(){
   return fetch('https://api.emailjs.com/api/v1.0/email/send', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ service_id: EMAILJS_SERVICE_ID, template_id: EMAILJS_STATUS_TEMPLATE_ID, user_id: EMAILJS_PUBLIC_KEY,
-      template_params: { to_email: email, cc_email: email === MOTTAGARE ? '' : MOTTAGARE, reply_to: MOTTAGARE,
+      template_params: { to_email: email, cc_email: email === MOTTAGARE ? '' : MOTTAGARE, reply_to: MOTTAGARE, from_name: BUTIK, to_name: order.name,
         subject: 'Beställning ' + FORENING + ' – ' + order.team + ' – #' + order.order_no + (!order.items.some(i => i.ready) ? ' – information om din beställning' : allReady() ? ' – klar för upphämtning' : ' – delar klara för upphämtning'),
         order_id: order.order_no, name: order.name, team: order.team, contact: order.contact, note: order.note || '–',
         message: mailBody(), message_text: mailText() } })
