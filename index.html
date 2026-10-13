@@ -9,9 +9,7 @@
 <style>
 :root{--bg:#f7f7f7;--card:#fff;--ink:#1a1a1a;--mute:#6b6b6b;--line:#e2e2e2;--accent:#00703c;--accent-ink:#fff;--shade:rgba(10,20,12,.5);
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-/* Admin behåller sin egen palett (och mörkt läge); butiken är alltid ljus */
-#adminRoot{--bg:#f3f5f1;--card:#fff;--ink:#16221a;--mute:#5d6b60;--line:#d9e0da}
-@media (prefers-color-scheme:dark){#adminRoot{--bg:#101811;--card:#192319;--ink:#e8efe9;--mute:#9fb0a2;--line:#2c3a2e}}
+/* Butiken och Admin är alltid ljusa och använder samma färger (variablerna i :root ovan) */
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
@@ -30,14 +28,16 @@ a.btn{display:inline-block;text-decoration:none}
 #adminRoot{display:none;position:fixed;inset:0;z-index:20;background:var(--bg);overflow:auto}
 html.adm{overflow:hidden}   /* låser sidan bakom admin, så bara admin-lagret har en scrollbar */
 .adm #adminRoot{display:block}
-#adminRoot:empty::before{content:"Laddar…";display:block;padding-top:40vh;text-align:center;color:var(--mute)}
+#adminRoot:empty::before{content:"";display:block;height:96px;background:#113b5d}   /* mörkgrå header syns direkt vid omladdning, innan Admin hunnit startas */
+#adminRoot:empty::after{content:"Laddar…";display:block;padding-top:30vh;text-align:center;color:var(--mute)}
+@media (max-width:560px){#adminRoot:empty::before{height:72px}}
 #cartBtn{position:relative;margin-left:auto;background:transparent;border:0;color:#fff;padding:6px 10px 6px 6px;display:flex}
 #cartBtn:focus-visible{outline-color:#fff}
 #count{position:absolute;top:-4px;right:-2px;min-width:22px;height:22px;padding:0 5px;border-radius:99px;background:#e5001c;color:#fff;font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center}
 .tabs{background:#ececec;border-bottom:1px solid #e0e0e0}
 .tabsin{max-width:1100px;margin:0 auto;padding:0 16px;display:flex;align-items:stretch}
 .chips{display:flex;overflow-x:auto}
-.tabs button{border:0;border-radius:0;background:transparent;color:#8a8a8a;font-size:1rem;font-weight:400;padding:17px 23px;white-space:nowrap}
+.tabs button{border:0;border-radius:0;background:transparent;color:#8a8a8a;font-size:1rem;font-weight:400;padding:10px 23px;white-space:nowrap}
 .chips .chip:first-child{padding-left:0}
 .chip[aria-pressed=true]{color:#8a8a8a;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:6px}
 #adminBtn{margin-left:auto;flex:none;padding-right:0!important}

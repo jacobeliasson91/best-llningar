@@ -5,8 +5,23 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;
 const kr = n => n.toLocaleString('sv-SE') + ' kr';
 let sb, root, raw = [], report = [], prods = [], editing = null, newImg = null;
 
-const CSS = `#adminRoot .w{max-width:900px;margin:0 auto;padding:16px 16px 60px}
-#adminRoot .top{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px}#adminRoot .top h1{margin-right:auto}
+const CSS = `#adminRoot .w{max-width:1100px;margin:0 auto;padding:24px 16px 60px}
+/* Header: samma uppbyggnad som butiken, men mörkgrå så att man ser att man är i Admin */
+#adminRoot .ah{position:sticky;top:0;z-index:5;background:#113b5d;color:#fff}
+#adminRoot .ahin{max-width:1100px;margin:0 auto;padding:16px;display:flex;align-items:center;gap:20px}
+#adminRoot .ah .logo{height:64px;width:auto;display:block}
+#adminRoot .ah h1{color:#fff;font-size:2.25rem;font-weight:700;letter-spacing:-.01em;margin:0}
+#adminRoot .ah .ahb{margin-left:auto;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.55);border-radius:4px;padding:8px 14px}
+#adminRoot .ah .ahb:focus-visible{outline-color:#fff}
+@media (max-width:560px){#adminRoot .ahin{gap:12px;padding:12px 16px}#adminRoot .ah .logo{height:48px}#adminRoot .ah h1{font-size:1.6rem}}
+#adminRoot .at{background:#ececec;border-bottom:1px solid #e0e0e0}
+#adminRoot .atin{max-width:1100px;margin:0 auto;padding:0 16px;display:flex;align-items:stretch}
+#adminRoot .atl{display:flex;overflow-x:auto}
+#adminRoot .at button{border:0;border-radius:0;background:transparent;color:#8a8a8a;font-size:1rem;font-weight:400;padding:10px 23px;white-space:nowrap}
+#adminRoot .atl button:first-child{padding-left:0}
+#adminRoot .atl button[aria-pressed=true]{color:#3a3a3a;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:6px}
+#adminRoot .at #aout{margin-left:auto;padding-right:0}
+#adminRoot .at button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 #adminRoot .c{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
 #adminRoot label{display:block;font-size:.85rem;color:var(--mute);margin:0 0 4px}
 #adminRoot input:not([type=checkbox]):not([type=file]),#adminRoot select,#adminRoot textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
@@ -21,8 +36,14 @@ const CSS = `#adminRoot .w{max-width:900px;margin:0 auto;padding:16px 16px 60px}
 #adminRoot .th{width:56px;height:56px;border-radius:8px;object-fit:cover;background:var(--line);flex:none;display:flex;align-items:center;justify-content:center;font-size:1.6rem}
 #adminRoot .ck{display:flex;gap:8px;align-items:center;font-size:.95rem;color:var(--ink);margin-top:12px}
 #adminRoot .ac{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}#adminRoot .danger{color:#c0392b}
-#adminRoot .tabs button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-#adminRoot .lg{max-width:380px;margin:12vh auto 0}
+#adminRoot .lg{max-width:380px;margin:8vh auto 0}
+#adminRoot .pgbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+#adminRoot .pgbar label{display:flex;align-items:center;gap:8px;margin:0}
+#adminRoot .pgbar select{width:auto;padding:6px 10px}
+#adminRoot .pgb{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:16px}
+#adminRoot .pgb button{min-width:40px;padding:7px 12px}
+#adminRoot .pgb button:disabled{opacity:.45;cursor:default}
+#adminRoot .pgb .gap{align-self:center;color:var(--mute);padding:0 2px}
 #adminRoot details.o{border-bottom:1px solid var(--line)}#adminRoot details.o:last-child{border:0}
 #adminRoot details.o summary{cursor:pointer;padding:12px 0;display:flex;gap:12px;justify-content:space-between;align-items:center;list-style:none}
 #adminRoot details.o summary::-webkit-details-marker{display:none}#adminRoot details.o summary b{display:block}
@@ -46,13 +67,14 @@ window.openAdmin = async function(){
   data.session ? shell(data.session.user.email) : login();
 };
 
+const HEAD = `<header class="ah"><div class="ahin"><img class="logo" src="emblem.png" alt="Skabersjö IF"><h1>Admin</h1><button type="button" id="aclose" class="ahb">Till butiken</button></div></header>`;
+
 function login(){
-  root.innerHTML = `<div class="w"><div class="c lg"><h1>Admin</h1><p class="m">Endast för administratör.</p>
+  root.innerHTML = HEAD + `<div class="w"><div class="c lg"><h2 style="margin:0 0 4px;font-size:1.25rem">Logga in</h2><p class="m">Endast för administratör.</p>
   <div style="margin-bottom:12px"><label for="aem">E-post</label><input id="aem" type="email" autocomplete="username"></div>
   <div style="margin-bottom:12px"><label for="apw">Lösenord</label><input id="apw" type="password" autocomplete="current-password"></div>
-  <button type="button" id="ago" class="primary" style="width:100%">Logga in</button><p class="e" id="aerr" role="alert"></p>
-  <button type="button" id="acl" style="width:100%">Tillbaka till butiken</button></div></div>`;
-  $('acl').onclick = closeAdmin;
+  <button type="button" id="ago" class="primary" style="width:100%">Logga in</button><p class="e" id="aerr" role="alert"></p></div></div>`;
+  $('aclose').onclick = closeAdmin;
   $('apw').addEventListener('keydown', e => { if (e.key === 'Enter') $('ago').click(); });
   $('ago').onclick = async () => {
     const { data, error } = await sb.auth.signInWithPassword({ email: $('aem').value.trim(), password: $('apw').value });
@@ -61,9 +83,7 @@ function login(){
 }
 
 function shell(email){
-  root.innerHTML = `<div class="w"><div class="top"><h1>Admin</h1><span class="tabs" style="display:flex;gap:8px">
-  <button type="button" id="tP" aria-pressed="true">Produkter</button><button type="button" id="tH" aria-pressed="false">Orderhistorik</button><button type="button" id="tR" aria-pressed="false">Rapporter</button></span>
-  <button type="button" id="aout">Logga ut</button><button type="button" id="aclose">Stäng</button></div><div id="aview"></div></div>`;
+  root.innerHTML = HEAD + `<nav class="at"><div class="atin"><div class="atl"><button type="button" id="tP" aria-pressed="true">Produkter</button><button type="button" id="tH" aria-pressed="false">Orderhistorik</button><button type="button" id="tR" aria-pressed="false">Rapporter</button></div><button type="button" id="aout">Logga ut</button></div></nav><div class="w"><div id="aview"></div></div>`;
   $('aclose').onclick = closeAdmin;
   $('aout').onclick = async () => { await sb.auth.signOut(); login(); };
   const tab = t => { $('tR').setAttribute('aria-pressed', t === 'R'); $('tP').setAttribute('aria-pressed', t === 'P'); $('tH').setAttribute('aria-pressed', t === 'H'); };
@@ -124,24 +144,32 @@ function csv(){
 }
 
 /* ---------- ORDERHISTORIK ---------- */
-let ords = [];
+let ords = [], hPage = 1, hSize = 20;   // hSize 0 = alla
 const when = d => new Date(d).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' });
 async function orders(){
-  $('aview').innerHTML = `<div class="c"><label for="hq">Sök på order-ID, namn, lag eller e-post</label><input id="hq" type="search" autocomplete="off"><p class="e" id="herr" role="alert"></p><p class="m" id="hcount" style="margin:0"></p></div><div class="c" id="hlist"><p class="m">Hämtar…</p></div>`;
-  ords = [];
+  $('aview').innerHTML = `<div class="c"><label for="hq">Sök på order-ID, namn, lag eller e-post</label><input id="hq" type="search" autocomplete="off"><p class="e" id="herr" role="alert"></p><div class="pgbar"><span class="m" id="hcount"></span><label>Rader per sida <select id="hsz"><option value="20">20</option><option value="50">50</option><option value="100">100</option><option value="0">Alla</option></select></label></div></div><div class="c"><div id="hlist"><p class="m">Hämtar…</p></div><div class="pgb" id="hpg"></div></div>`;
+  ords = []; hPage = 1;
+  $('hsz').value = String(hSize);
   for (let f = 0; ; f += 500){
     const { data, error } = await sb.from('orders').select('order_no,created_at,name,team,contact,note,order_items(product_name,size,qty,unit_price,ready)')
       .order('created_at', { ascending: false }).range(f, f + 499);
     if (error){ $('hlist').innerHTML = ''; $('herr').textContent = 'Kunde inte hämta ordrar: ' + error.message; return; }
     ords.push(...data); if (data.length < 500) break;
   }
-  $('hq').oninput = drawOrders; drawOrders();
+  $('hq').oninput = () => { hPage = 1; drawOrders(); };
+  $('hsz').onchange = () => { hSize = +$('hsz').value; hPage = 1; drawOrders(); };
+  $('hpg').onclick = e => { const b = e.target.closest('button[data-p]'); if (!b || b.disabled) return; hPage = +b.dataset.p; drawOrders(); $('hq').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  drawOrders();
 }
 function drawOrders(){
   const q = $('hq').value.trim().toLowerCase();
   const list = ords.filter(o => !q || [o.order_no, o.name, o.team, o.contact].join(' ').toLowerCase().includes(q));
-  $('hcount').textContent = list.length + ' av ' + ords.length + ' ordrar, senaste först';
-  $('hlist').innerHTML = list.length ? list.map(o => {
+  const size = hSize || list.length || 1, pages = Math.max(1, Math.ceil(list.length / size));
+  hPage = Math.min(Math.max(1, hPage), pages);
+  const a = (hPage - 1) * size, shown = list.slice(a, a + size);
+  $('hcount').textContent = list.length ? 'Visar ' + (a + 1) + '–' + (a + shown.length) + ' av ' + list.length + (list.length !== ords.length ? ' (filtrerat från ' + ords.length + ')' : '') + ' ordrar, senaste först' : '0 av ' + ords.length + ' ordrar';
+  $('hpg').innerHTML = pages > 1 ? pageButtons(hPage, pages) : '';
+  $('hlist').innerHTML = list.length ? shown.map(o => {
     const it = o.order_items || [], n = it.filter(i => i.ready).length, tot = it.reduce((s, i) => s + i.qty * i.unit_price, 0);
     const st = !it.length ? '' : n === it.length ? '<span class="ok">Alla klara</span>' : n ? '<span class="m">' + n + ' av ' + it.length + ' klara</span>' : '<span class="m">Ej klara</span>';
     return `<details class="o"><summary><span><b>Order #${esc(o.order_no)} – ${esc(o.team)}</b><span class="m">${when(o.created_at)} · ${esc(o.name)}</span></span><span class="rt">${kr(tot)}<br>${st}</span></summary>
@@ -149,6 +177,13 @@ function drawOrders(){
     <div class="wr"><table><thead><tr><th class="r">Antal</th><th>Artikel</th><th>Storlek</th><th class="r">À-pris</th><th class="r">Summa</th><th>Status</th></tr></thead><tbody>${it.map(i => `<tr><td class="r">${i.qty} st</td><td>${esc(i.product_name)}</td><td>${esc(i.size || '–')}</td><td class="r">${kr(i.unit_price)}</td><td class="r">${kr(i.qty * i.unit_price)}</td><td>${i.ready ? '<span class="ok">✔ Klar</span>' : '<span class="m">Ej klar</span>'}</td></tr>`).join('')}</tbody>
     <tfoot><tr><td colspan="4" class="r">Totalt</td><td class="r">${kr(tot)}</td><td></td></tr></tfoot></table></div></details>`;
   }).join('') : '<p class="m">Inga ordrar hittades.</p>';
+}
+
+function pageButtons(cur, pages){
+  const nums = [...new Set([1, cur - 1, cur, cur + 1, pages].filter(n => n >= 1 && n <= pages))].sort((x, y) => x - y);
+  let out = '<button type="button" data-p="' + (cur - 1) + '"' + (cur === 1 ? ' disabled' : '') + '>‹ Föregående</button>', last = 0;
+  nums.forEach(n => { if (n - last > 1) out += '<span class="gap">…</span>'; out += '<button type="button" data-p="' + n + '"' + (n === cur ? ' class="primary" aria-current="page"' : '') + '>' + n + '</button>'; last = n; });
+  return out + '<button type="button" data-p="' + (cur + 1) + '"' + (cur === pages ? ' disabled' : '') + '>Nästa ›</button>';
 }
 
 /* ---------- PRODUKTER ---------- */
