@@ -357,8 +357,9 @@ try { if (sessionStorage.getItem('klubbkod') === 'ok') unlock(); } catch(e){}
 /* Hämtar produkterna från databasen (redigeras via Admin). Faller tillbaka på listan ovan. */
 function loadProdukter(){
   if (!SUPABASE_URL) return;
-  fetch(SUPABASE_URL + '/rest/v1/products?select=*&active=eq.true&order=id', {headers:{apikey:SUPABASE_ANON_KEY}})
-    .then(r => r.ok ? r.json() : []).then(d => { if (d.length){ PRODUKTER = d.map(p => ({...p, desc:p.descr||''})); renderGrid(); } }).catch(() => {});
+  const get = o => fetch(SUPABASE_URL + '/rest/v1/products?select=*&active=eq.true&order=' + o, {headers:{apikey:SUPABASE_ANON_KEY}}).then(r => r.ok ? r.json() : Promise.reject());
+  get('sort_order.asc.nullslast,id.asc').catch(() => get('id'))   // ordningen som sätts i Admin (faller tillbaka på id om kolumnen saknas)
+    .then(d => { if (d.length){ PRODUKTER = d.map(p => ({...p, desc:p.descr||''})); renderGrid(); } }).catch(() => {});
 }
 $('adminBtn').onclick = () => {
   if (!location.hash.startsWith('#admin')) history.replaceState(null, '', '#admin');   // omladdning stannar kvar i admin

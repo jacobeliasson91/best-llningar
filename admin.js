@@ -3,7 +3,7 @@
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const kr = n => n.toLocaleString('sv-SE') + ' kr';
-let sb, root, raw = [], report = [], prods = [], editing = null, newImg = null, pdlg = null;
+let sb, root, raw = [], report = [], prods = [], editing = null, newImg = null, pdlg = null, sortReady = false, orderQ = Promise.resolve();
 
 const CSS = `#adminRoot .w{max-width:1100px;margin:0 auto;padding:24px 16px 60px}
 /* Header: samma uppbyggnad som butiken, men mörkgrå så att man ser att man är i Admin */
@@ -53,10 +53,15 @@ const CSS = `#adminRoot .w{max-width:1100px;margin:0 auto;padding:24px 16px 60px
 #adminRoot button:disabled{opacity:.45;cursor:default}
 #adminRoot input[type=checkbox]{width:auto;flex:none;margin:0;accent-color:var(--accent)}
 #adminRoot details.o .ac{padding-bottom:20px}   /* luft mellan Radera-knappen och linjen under ordern */
+#adminRoot #plist.srt .row{cursor:grab;user-select:none;-webkit-user-select:none;background:var(--card)}
+#adminRoot .grip{color:var(--mute);font-size:1.15rem;line-height:1;letter-spacing:-3px;flex:none;padding:0 2px}
+#adminRoot .sortable-ghost{opacity:.4;background:#e8f1ec!important}
+#adminRoot .sortable-fallback{opacity:.96!important;cursor:grabbing!important;box-shadow:0 8px 22px rgba(0,0,0,.2);border:1px solid var(--line);border-radius:5px;padding-left:10px;padding-right:10px}
 #adminRoot .dng{background:#c0392b;border-color:#c0392b;color:#fff;font-weight:600}
 #adminRoot dialog .askt p{margin:0 0 8px}
 #adminRoot .ok{margin:8px 0 0}`;
 
+const SORTABLE = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js';   // dra-och-släpp-bibliotek, laddas först i Produkter
 function load(src){ return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
 
 /* Popup-fönster (samma utseende som butikens). Läggs inuti admin-lagret och tas bort när det stängs. */
@@ -259,19 +264,41 @@ function pageButtons(cur, pages){
 /* ---------- PRODUKTER ---------- */
 async function products(){
   editing = null; $('aview').innerHTML = '<p class="m">Hämtar…</p>';
-  const { data, error } = await sb.from('products').select('*').order('id');
-  if (error){ $('aview').innerHTML = '<p class="e">Kunde inte hämta produkter: ' + esc(error.message) + '<br>Har du kört schema-produkter.sql?</p>'; return; }
-  prods = data;
+  let r = await sb.from('products').select('*').order('sort_order', { ascending: true, nullsFirst: false }).order('id');
+  sortReady = !r.error;
+  if (r.error) r = await sb.from('products').select('*').order('id');   // sort_order saknas än (schema-ordning.sql ej körd)
+  if (r.error){ $('aview').innerHTML = '<p class="e">Kunde inte hämta produkter: ' + esc(r.error.message) + '<br>Har du kört schema-produkter.sql?</p>'; return; }
+  prods = r.data;
+  let lib = false;
+  if (sortReady && prods.length > 1){ try { if (!window.Sortable) await load(SORTABLE); lib = !!window.Sortable; } catch (e) {} }
+  const hint = prods.length < 2 ? '' : lib ? '<p class="m" style="margin:0 0 4px">Dra och släpp en rad för att ändra ordningen. Butiken visar produkterna i samma ordning.</p>'
+    : !sortReady ? '<p class="e">Kör schema-ordning.sql i Supabase för att kunna ändra ordningen.</p>' : '<p class="e">Kunde inte ladda dra-och-släpp (kontrollera internetanslutningen).</p>';
   $('aview').innerHTML = `<div class="c"><div class="ac" style="margin:0 0 8px"><button type="button" id="pnew" class="primary">+ Ny produkt</button>
-  ${prods.length ? '' : '<button type="button" id="pimp">Importera produkterna som ligger i koden</button>'}</div>
-  <div id="plist">${prods.map(p => `<div class="row"><${p.img ? 'img src="' + esc(p.img) + '" alt=""' : 'div'} class="th">${p.img ? '>' : esc(p.emoji) + '</div>'}
+  ${prods.length ? '' : '<button type="button" id="pimp">Importera produkterna som ligger i koden</button>'}</div>${hint}<p id="pmsg" role="status" class="m" style="margin:4px 0 8px"></p>
+  <div id="plist"${lib ? ' class="srt"' : ''}>${prods.map(p => `<div class="row" data-id="${p.id}">${lib ? '<span class="grip" aria-hidden="true">⋮⋮</span>' : ''}<${p.img ? 'img src="' + esc(p.img) + '" alt=""' : 'div'} class="th">${p.img ? '>' : esc(p.emoji) + '</div>'}
   <div class="t"><b>${p.brand ? esc(p.brand) + ' – ' : ''}${esc(p.name)}</b><span class="m">${esc(p.cat)} · ${kr(p.price)}${p.active ? '' : ' · dold'}</span></div><button type="button" data-e="${p.id}">Redigera</button></div>`).join('') || '<p class="m">Inga produkter i databasen ännu.</p>'}</div></div>`;
   $('pnew').onclick = () => form({ cat: 'Kläder', active: true });
   if ($('pimp')) $('pimp').onclick = importStd;
   $('plist').onclick = e => { const id = e.target.dataset.e; if (id) form(prods.find(p => p.id == id)); };
+  if (lib) new Sortable($('plist'), { draggable: '.row', filter: 'button', preventOnFilter: false, animation: 150, forceFallback: true, fallbackTolerance: 4,
+    delay: 180, delayOnTouchOnly: true, touchStartThreshold: 6, onEnd: () => { orderQ = orderQ.then(saveOrder); } });   // hela raden går att dra; knappen "Redigera" fungerar som vanligt
+}
+const msg = (t, bad) => { const e = $('pmsg'); if (e){ e.textContent = t; e.className = bad ? 'e' : 'ok'; } };
+/* Sparar ordningen: raderna numreras 1, 2, 3 … (bara de som flyttats uppdateras) */
+async function saveOrder(){
+  const list = $('plist'); if (!list) return;
+  const ids = [...list.children].map(r => +r.dataset.id).filter(Boolean);
+  const upd = ids.map((id, i) => ({ id, n: i + 1 })).filter(x => (prods.find(p => p.id === x.id) || {}).sort_order !== x.n);
+  if (!upd.length) return;
+  msg('Sparar ordningen…');
+  const res = await Promise.all(upd.map(x => sb.from('products').update({ sort_order: x.n }).eq('id', x.id)));
+  const bad = res.find(r => r.error);
+  if (bad){ await products(); msg('Kunde inte spara ordningen: ' + bad.error.message, true); return; }
+  prods = ids.map((id, i) => Object.assign(prods.find(p => p.id === id), { sort_order: i + 1 }));
+  msg('Ordningen sparad. Butiken visar samma ordning.'); if (window.loadProdukter) loadProdukter();
 }
 async function importStd(){
-  const rows = STANDARD.map(p => ({ name: p.name, cat: p.cat, price: p.price, descr: p.desc || '', emoji: p.emoji || '🛍️', color: p.color || '#e6eadf', sizes: p.sizes || null }));
+  const rows = STANDARD.map((p, i) => ({ name: p.name, cat: p.cat, price: p.price, descr: p.desc || '', emoji: p.emoji || '🛍️', color: p.color || '#e6eadf', sizes: p.sizes || null, ...(sortReady ? { sort_order: i + 1 } : {}) }));
   const { error } = await sb.from('products').insert(rows); error ? alert('Fel: ' + error.message) : products();
 }
 function form(p){
@@ -306,6 +333,7 @@ async function save(){
   $('fsave').disabled = true; err('Sparar…');
   const sizes = $('fs').value.split(',').map(x => x.trim()).filter(Boolean);
   const row = { brand: $('fv').value.trim() || null, name, cat: $('fc').value, price, descr: $('fd').value.trim(), sizes: sizes.length ? sizes : null, active: $('fa').checked, back_in_stock: $('fb').value || null };
+  if (!editing.id && sortReady) row.sort_order = Math.max(0, ...prods.map(p => p.sort_order || 0)) + 1;   // ny produkt hamnar sist, dra den sedan dit du vill
   try {
     if (newImg){
       const path = Date.now() + '.jpg', up = await sb.storage.from('product-images').upload(path, newImg, { contentType: 'image/jpeg' });
