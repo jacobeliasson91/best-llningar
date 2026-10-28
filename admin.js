@@ -52,6 +52,7 @@ const CSS = `#adminRoot .w{max-width:1100px;margin:0 auto;padding:24px 16px 60px
 #adminRoot dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:12px 0}#adminRoot dt{color:var(--mute)}#adminRoot dd{margin:0;overflow-wrap:anywhere}
 #adminRoot button:disabled{opacity:.45;cursor:default}
 #adminRoot input[type=checkbox]{width:auto;flex:none;margin:0;accent-color:var(--accent)}
+#adminRoot details.o .ac{padding-bottom:20px}   /* luft mellan Radera-knappen och linjen under ordern */
 #adminRoot .dng{background:#c0392b;border-color:#c0392b;color:#fff;font-weight:600}
 #adminRoot dialog .askt p{margin:0 0 8px}
 #adminRoot .ok{margin:8px 0 0}`;
