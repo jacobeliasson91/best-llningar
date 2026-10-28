@@ -3,7 +3,7 @@
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const kr = n => n.toLocaleString('sv-SE') + ' kr';
-let sb, root, raw = [], report = [], prods = [], editing = null, newImg = null;
+let sb, root, raw = [], report = [], prods = [], editing = null, newImg = null, pdlg = null;
 
 const CSS = `#adminRoot .w{max-width:1100px;margin:0 auto;padding:24px 16px 60px}
 /* Header: samma uppbyggnad som butiken, men mörkgrå så att man ser att man är i Admin */
@@ -49,9 +49,43 @@ const CSS = `#adminRoot .w{max-width:1100px;margin:0 auto;padding:24px 16px 60px
 #adminRoot details.o summary::-webkit-details-marker{display:none}#adminRoot details.o summary b{display:block}
 #adminRoot details.o summary .rt{text-align:right;white-space:nowrap}#adminRoot .ok{color:var(--accent);font-weight:600}
 #adminRoot details.o[open] summary{border-bottom:1px dashed var(--line)}
-#adminRoot dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:12px 0}#adminRoot dt{color:var(--mute)}#adminRoot dd{margin:0;overflow-wrap:anywhere}`;
+#adminRoot dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:12px 0}#adminRoot dt{color:var(--mute)}#adminRoot dd{margin:0;overflow-wrap:anywhere}
+#adminRoot button:disabled{opacity:.45;cursor:default}
+#adminRoot input[type=checkbox]{width:auto;flex:none;margin:0;accent-color:var(--accent)}
+#adminRoot .dng{background:#c0392b;border-color:#c0392b;color:#fff;font-weight:600}
+#adminRoot dialog .askt p{margin:0 0 8px}
+#adminRoot .ok{margin:8px 0 0}`;
 
 function load(src){ return new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
+
+/* Popup-fönster (samma utseende som butikens). Läggs inuti admin-lagret och tas bort när det stängs. */
+function popup(title, bodyHtml, o){
+  o = o || {};
+  const d = document.createElement('dialog');
+  d.innerHTML = '<div class="dh"><h2>' + esc(title) + '</h2><button type="button" class="dx" aria-label="Stäng">✕</button></div><div class="db">' + bodyHtml + '</div>';
+  if (o.wide) d.style.width = 'min(640px,calc(100vw - 24px))';
+  root.appendChild(d);
+  d.querySelector('.dx').onclick = () => d.close();
+  if (o.dismissable !== false) d.addEventListener('click', e => { if (e.target === d) d.close(); });   // klick utanför stänger (inte i redigeringsformuläret, så inget går förlorat av misstag)
+  d.addEventListener('close', () => d.remove());
+  d.showModal();
+  return d;
+}
+/* Fråga innan något raderas. Med word måste man skriva ordet för att kunna bekräfta (används vid massradering). */
+function ask(o){
+  return new Promise(res => {
+    let yes = false;
+    const d = popup(o.title, '<div class="askt">' + o.html + '</div>' +
+      (o.word ? '<label for="askw" style="margin-top:12px">Skriv <b>' + esc(o.word) + '</b> för att bekräfta</label><input id="askw" autocomplete="off" autocapitalize="characters">' : '') +
+      '<div class="ac"><button type="button" id="askok" class="dng">' + esc(o.ok || 'Radera') + '</button><button type="button" id="askno">Avbryt</button></div>', { dismissable: false });
+    const okb = d.querySelector('#askok');
+    if (o.word){ const w = d.querySelector('#askw'); okb.disabled = true; w.oninput = () => { okb.disabled = w.value.trim().toUpperCase() !== o.word; }; w.focus(); }
+    okb.onclick = () => { yes = true; d.close(); };
+    d.querySelector('#askno').onclick = () => d.close();
+    d.addEventListener('close', () => res(yes));
+  });
+}
+const NOPERM = 'Inget raderades. Har du kört schema-radera.sql i Supabase?';
 
 const closeAdmin = () => { document.documentElement.classList.remove('adm'); history.replaceState(null, '', location.pathname + location.search); };
 
@@ -102,9 +136,9 @@ function reports(){
   <div><button type="button" id="rrun" class="primary" style="width:100%">Visa</button></div></div>
   <label class="ck"><input type="checkbox" id="rsz"> Dela upp per storlek</label><p class="e" id="rerr" role="alert"></p></div>
   <div class="c"><div class="wr"><table><thead><tr><th class="r">Antal</th><th>Artikel</th><th id="rszh" hidden>Storlek</th><th class="r">À-pris</th><th class="r">Summa</th></tr></thead><tbody id="rrows"></tbody><tfoot id="rfoot"></tfoot></table></div>
-  <div class="ac"><button type="button" id="rcsv">Ladda ner Excel (CSV)</button></div></div>`;
+  <div class="ac"><button type="button" id="rcsv">Ladda ner Excel (CSV)</button><button type="button" id="rdel" class="danger" style="margin-left:auto">Radera rapportens ordrar…</button></div><p class="ok" id="rok" role="status"></p></div>`;
   $('rp').onchange = () => document.querySelectorAll('.cu').forEach(x => x.hidden = $('rp').value !== 'x');
-  $('rrun').onclick = fetchReport; $('rteam').onchange = render; $('rsz').onchange = render; $('rcsv').onclick = csv;
+  $('rrun').onclick = fetchReport; $('rteam').onchange = render; $('rsz').onchange = render; $('rcsv').onclick = csv; $('rdel').onclick = delReport;
   fetchReport();
 }
 function range(){
@@ -115,7 +149,7 @@ function range(){
 async function fetchReport(){
   $('rerr').textContent = ''; const [a, b] = range(); raw = [];
   for (let f = 0; ; f += 1000){
-    const { data, error } = await sb.from('order_items').select('product_name,size,qty,unit_price,orders!inner(created_at,team)')
+    const { data, error } = await sb.from('order_items').select('order_id,product_name,size,qty,unit_price,orders!inner(created_at,team)')
       .gte('orders.created_at', a.toISOString()).lt('orders.created_at', b.toISOString()).range(f, f + 999);
     if (error){ $('rerr').textContent = 'Kunde inte hämta data: ' + error.message; return; }
     raw.push(...data); if (data.length < 1000) break;
@@ -134,7 +168,29 @@ function render(){
   $('rszh').hidden = !bySize;
   const tq = report.reduce((s, x) => s + x.q, 0), ts = report.reduce((s, x) => s + x.q * x.price, 0);
   $('rrows').innerHTML = report.length ? report.map(x => `<tr><td class="r">${x.q} st</td><td>${esc(x.name)}</td>${bySize ? '<td>' + esc(x.size) + '</td>' : ''}<td class="r">${kr(x.price)}</td><td class="r">${kr(x.q * x.price)}</td></tr>`).join('') : '<tr><td colspan="5" class="m">Inga beställningar under perioden.</td></tr>';
+  $('rdel').disabled = !report.length;
   $('rfoot').innerHTML = report.length ? `<tr><td class="r">${tq} st</td><td colspan="${bySize ? 3 : 2}">Totalt</td><td class="r">${kr(ts)}</td></tr>` : '';
+}
+/* En rapport räknas ut live från ordrarna. Att radera en rapport = radera ordrarna bakom den (valt filter: period + lag). */
+async function delReport(){
+  const t = $('rteam').value, rows = raw.filter(r => !t || r.orders.team === t), ids = [...new Set(rows.map(r => r.order_id))];
+  if (!ids.length) return;
+  const pcs = rows.reduce((a, r) => a + r.qty, 0), sum = rows.reduce((a, r) => a + r.qty * r.unit_price, 0);
+  const per = $('rp').value === 'x' ? ($('rf').value || 'början') + ' – ' + ($('rt').value || 'idag') : $('rp').selectedOptions[0].textContent.toLowerCase();
+  const yes = await ask({ title: 'Radera rapportens ordrar?', ok: 'Radera ' + ids.length + ' ordrar', word: 'RADERA',
+    html: '<p>Rapporten räknas ut från ordrarna, så att radera den betyder att <b>' + ids.length + ' ordrar</b> (' + pcs + ' st, ' + kr(sum) + ') tas bort för perioden <b>' + esc(per) + '</b>' + (t ? ', lag <b>' + esc(t) + '</b>' : ', alla lag') + '.</p><p>De försvinner också ur Orderhistorik och <b>kan inte återskapas</b>. Ladda gärna ner CSV först.</p>' });
+  if (!yes) return;
+  $('rdel').disabled = true; $('rok').textContent = '';
+  let gone = 0, fail = '';
+  for (let i = 0; i < ids.length; i += 40){
+    const { data, error } = await sb.from('orders').delete().in('id', ids.slice(i, i + 40)).select('id');
+    if (error){ fail = 'Kunde inte radera: ' + error.message; break; }
+    if (!data || !data.length){ fail = NOPERM; break; }
+    gone += data.length;
+  }
+  await fetchReport();
+  if (fail) $('rerr').textContent = fail + (gone ? ' (' + gone + ' av ' + ids.length + ' ordrar hann raderas)' : '');
+  if (gone) $('rok').textContent = gone + ' ordrar raderades.';
 }
 function csv(){
   const bs = $('rsz').checked, rows = [['Antal', 'Artikel'].concat(bs ? ['Storlek'] : [], ['À-pris (kr)', 'Summa (kr)'])]
@@ -147,15 +203,28 @@ function csv(){
 let ords = [], hPage = 1, hSize = 20;   // hSize 0 = alla
 const when = d => new Date(d).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' });
 async function orders(){
-  $('aview').innerHTML = `<div class="c"><label for="hq">Sök på order-ID, namn, lag eller e-post</label><input id="hq" type="search" autocomplete="off"><p class="e" id="herr" role="alert"></p><div class="pgbar"><span class="m" id="hcount"></span><label>Rader per sida <select id="hsz"><option value="20">20</option><option value="50">50</option><option value="100">100</option><option value="0">Alla</option></select></label></div></div><div class="c"><div id="hlist"><p class="m">Hämtar…</p></div><div class="pgb" id="hpg"></div></div>`;
+  $('aview').innerHTML = `<div class="c"><label for="hq">Sök på order-ID, namn, lag eller e-post</label><input id="hq" type="search" autocomplete="off"><p class="e" id="herr" role="alert"></p><p class="ok" id="hok" role="status"></p><div class="pgbar"><span class="m" id="hcount"></span><label>Rader per sida <select id="hsz"><option value="20">20</option><option value="50">50</option><option value="100">100</option><option value="0">Alla</option></select></label></div></div><div class="c"><div id="hlist"><p class="m">Hämtar…</p></div><div class="pgb" id="hpg"></div></div>`;
   ords = []; hPage = 1;
   $('hsz').value = String(hSize);
   for (let f = 0; ; f += 500){
-    const { data, error } = await sb.from('orders').select('order_no,created_at,name,team,contact,note,order_items(product_name,size,qty,unit_price,ready)')
+    const { data, error } = await sb.from('orders').select('id,order_no,created_at,name,team,contact,note,order_items(product_name,size,qty,unit_price,ready)')
       .order('created_at', { ascending: false }).range(f, f + 499);
     if (error){ $('hlist').innerHTML = ''; $('herr').textContent = 'Kunde inte hämta ordrar: ' + error.message; return; }
     ords.push(...data); if (data.length < 500) break;
   }
+  $('hlist').onclick = async e => {
+    const b = e.target.closest('button[data-del]'); if (!b) return;
+    const o = ords.find(x => x.id === b.dataset.del); if (!o) return;
+    const it = o.order_items || [], tot = it.reduce((a, i) => a + i.qty * i.unit_price, 0);
+    const yes = await ask({ title: 'Radera order #' + o.order_no + '?', ok: 'Radera order',
+      html: '<p><b>' + esc(o.name) + '</b>, ' + esc(o.team) + ' · ' + when(o.created_at) + '<br>' + it.reduce((a, i) => a + i.qty, 0) + ' st, ' + kr(tot) + '</p><p>Ordern försvinner också ur Rapporter och <b>kan inte återskapas</b>.</p>' });
+    if (!yes) return;
+    $('herr').textContent = ''; $('hok').textContent = '';
+    const { data, error } = await sb.from('orders').delete().eq('id', o.id).select('id');
+    if (error) return $('herr').textContent = 'Kunde inte radera: ' + error.message;
+    if (!data || !data.length) return $('herr').textContent = NOPERM;
+    ords = ords.filter(x => x.id !== o.id); drawOrders(); $('hok').textContent = 'Order #' + o.order_no + ' raderades.';
+  };
   $('hq').oninput = () => { hPage = 1; drawOrders(); };
   $('hsz').onchange = () => { hSize = +$('hsz').value; hPage = 1; drawOrders(); };
   $('hpg').onclick = e => { const b = e.target.closest('button[data-p]'); if (!b || b.disabled) return; hPage = +b.dataset.p; drawOrders(); $('hq').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
@@ -175,7 +244,7 @@ function drawOrders(){
     return `<details class="o"><summary><span><b>Order #${esc(o.order_no)} – ${esc(o.team)}</b><span class="m">${when(o.created_at)} · ${esc(o.name)}</span></span><span class="rt">${kr(tot)}<br>${st}</span></summary>
     <dl><dt>Order-ID</dt><dd>#${esc(o.order_no)}</dd><dt>Lagd</dt><dd>${when(o.created_at)}</dd><dt>Beställare</dt><dd>${esc(o.name)}, ${esc(o.team)}</dd><dt>E-post</dt><dd>${esc(o.contact)}</dd>${o.note ? '<dt>Kommentar</dt><dd>' + esc(o.note) + '</dd>' : ''}</dl>
     <div class="wr"><table><thead><tr><th class="r">Antal</th><th>Artikel</th><th>Storlek</th><th class="r">À-pris</th><th class="r">Summa</th><th>Status</th></tr></thead><tbody>${it.map(i => `<tr><td class="r">${i.qty} st</td><td>${esc(i.product_name)}</td><td>${esc(i.size || '–')}</td><td class="r">${kr(i.unit_price)}</td><td class="r">${kr(i.qty * i.unit_price)}</td><td>${i.ready ? '<span class="ok">✔ Klar</span>' : '<span class="m">Ej klar</span>'}</td></tr>`).join('')}</tbody>
-    <tfoot><tr><td colspan="4" class="r">Totalt</td><td class="r">${kr(tot)}</td><td></td></tr></tfoot></table></div></details>`;
+    <tfoot><tr><td colspan="4" class="r">Totalt</td><td class="r">${kr(tot)}</td><td></td></tr></tfoot></table></div><div class="ac"><button type="button" class="danger" data-del="${esc(o.id)}">Radera order…</button></div></details>`;
   }).join('') : '<p class="m">Inga ordrar hittades.</p>';
 }
 
@@ -195,7 +264,7 @@ async function products(){
   $('aview').innerHTML = `<div class="c"><div class="ac" style="margin:0 0 8px"><button type="button" id="pnew" class="primary">+ Ny produkt</button>
   ${prods.length ? '' : '<button type="button" id="pimp">Importera produkterna som ligger i koden</button>'}</div>
   <div id="plist">${prods.map(p => `<div class="row"><${p.img ? 'img src="' + esc(p.img) + '" alt=""' : 'div'} class="th">${p.img ? '>' : esc(p.emoji) + '</div>'}
-  <div class="t"><b>${p.brand ? esc(p.brand) + ' – ' : ''}${esc(p.name)}</b><span class="m">${esc(p.cat)} · ${kr(p.price)}${p.active ? '' : ' · dold'}</span></div><button type="button" data-e="${p.id}">Redigera</button></div>`).join('') || '<p class="m">Inga produkter i databasen ännu.</p>'}</div></div><div id="pform"></div>`;
+  <div class="t"><b>${p.brand ? esc(p.brand) + ' – ' : ''}${esc(p.name)}</b><span class="m">${esc(p.cat)} · ${kr(p.price)}${p.active ? '' : ' · dold'}</span></div><button type="button" data-e="${p.id}">Redigera</button></div>`).join('') || '<p class="m">Inga produkter i databasen ännu.</p>'}</div></div>`;
   $('pnew').onclick = () => form({ cat: 'Kläder', active: true });
   if ($('pimp')) $('pimp').onclick = importStd;
   $('plist').onclick = e => { const id = e.target.dataset.e; if (id) form(prods.find(p => p.id == id)); };
@@ -206,7 +275,7 @@ async function importStd(){
 }
 function form(p){
   editing = p; newImg = null;
-  $('pform').innerHTML = `<div class="c"><h2 style="margin:0 0 12px;font-size:1.1rem">${p.id ? 'Redigera produkt' : 'Ny produkt'}</h2><div class="g">
+  pdlg = popup(p.id ? 'Redigera produkt' : 'Ny produkt', `<div class="g">
   <div><label for="fv">Varumärke</label><input id="fv" value="${esc(p.brand)}" placeholder="t.ex. Adidas"></div>
   <div><label for="fn">Namn</label><input id="fn" value="${esc(p.name)}"></div>
   <div><label for="fc">Kategori</label><select id="fc"><option${p.cat === 'Kläder' ? ' selected' : ''}>Kläder</option><option${p.cat === 'Material' ? ' selected' : ''}>Material</option></select></div>
@@ -217,10 +286,9 @@ function form(p){
   <div style="margin-top:12px"><label for="fb">Åter i lager (valfritt, visas på produktkortet tills datumet passerat)</label><div class="row" style="border:0;padding:0"><input id="fb" type="date" value="${esc(p.back_in_stock || '')}" style="flex:1"><button type="button" id="fbx">Rensa</button></div></div>
   <label class="ck"><input type="checkbox" id="fa"${p.active !== false ? ' checked' : ''}> Visa i butiken</label>
   <p class="e" id="ferr" role="alert"></p>
-  <div class="ac"><button type="button" id="fsave" class="primary">Spara</button><button type="button" id="fcancel">Avbryt</button>${p.id ? '<button type="button" id="fdel" class="danger">Ta bort produkt</button>' : ''}</div></div>`;
-  $('pform').scrollIntoView({ behavior: 'smooth' });
+  <div class="ac"><button type="button" id="fsave" class="primary">Spara</button><button type="button" id="fcancel">Avbryt</button>${p.id ? '<button type="button" id="fdel" class="danger" style="margin-left:auto">Ta bort produkt</button>' : ''}</div>`, { wide: true, dismissable: false });
   $('fbx').onclick = () => { $('fb').value = ''; };
-  $('fcancel').onclick = () => { $('pform').innerHTML = ''; };
+  $('fcancel').onclick = () => pdlg.close();
   $('fi').onchange = async e => { const f = e.target.files[0]; if (!f) return; newImg = await shrink(f); $('fprev').outerHTML = '<img class="th" id="fprev" alt="" src="' + URL.createObjectURL(newImg) + '">'; };
   $('fsave').onclick = save; if ($('fdel')) $('fdel').onclick = del;
 }
@@ -246,14 +314,15 @@ async function save(){
     }
     const r = editing.id ? await sb.from('products').update(row).eq('id', editing.id) : await sb.from('products').insert(row);
     if (r.error) throw r.error;
-    products(); if (window.loadProdukter) loadProdukter();
+    pdlg.close(); products(); if (window.loadProdukter) loadProdukter();
   } catch (e) { err('Kunde inte spara: ' + (e.message || e)); $('fsave').disabled = false; }
 }
 async function del(){
-  if (!confirm('Ta bort "' + editing.name + '"? Gamla beställningar och rapporter påverkas inte.')) return;
+  const yes = await ask({ title: 'Ta bort produkten?', ok: 'Ta bort produkt', html: '<p><b>' + esc(editing.name) + '</b> tas bort från butiken. Gamla beställningar och rapporter påverkas inte.</p>' });
+  if (!yes) return;
   const { error } = await sb.from('products').delete().eq('id', editing.id);
   if (error) return $('ferr').textContent = 'Kunde inte ta bort: ' + error.message;
   const o = oldPath(editing.img); if (o) sb.storage.from('product-images').remove([o]);
-  products(); if (window.loadProdukter) loadProdukter();
+  pdlg.close(); products(); if (window.loadProdukter) loadProdukter();
 }
 })();
