@@ -136,7 +136,7 @@ function reports(){
   <div><button type="button" id="rrun" class="primary" style="width:100%">Visa</button></div></div>
   <label class="ck"><input type="checkbox" id="rsz"> Dela upp per storlek</label><p class="e" id="rerr" role="alert"></p></div>
   <div class="c"><div class="wr"><table><thead><tr><th class="r">Antal</th><th>Artikel</th><th id="rszh" hidden>Storlek</th><th class="r">À-pris</th><th class="r">Summa</th></tr></thead><tbody id="rrows"></tbody><tfoot id="rfoot"></tfoot></table></div>
-  <div class="ac"><button type="button" id="rcsv">Ladda ner Excel (CSV)</button><button type="button" id="rdel" class="danger" style="margin-left:auto">Radera rapportens ordrar…</button></div><p class="ok" id="rok" role="status"></p></div>`;
+  <div class="ac"><button type="button" id="rcsv">Ladda ner Excel (CSV)</button><button type="button" id="rdel" class="dng" style="margin-left:auto">Radera rapportens ordrar</button></div><p class="ok" id="rok" role="status"></p></div>`;
   $('rp').onchange = () => document.querySelectorAll('.cu').forEach(x => x.hidden = $('rp').value !== 'x');
   $('rrun').onclick = fetchReport; $('rteam').onchange = render; $('rsz').onchange = render; $('rcsv').onclick = csv; $('rdel').onclick = delReport;
   fetchReport();
@@ -244,7 +244,7 @@ function drawOrders(){
     return `<details class="o"><summary><span><b>Order #${esc(o.order_no)} – ${esc(o.team)}</b><span class="m">${when(o.created_at)} · ${esc(o.name)}</span></span><span class="rt">${kr(tot)}<br>${st}</span></summary>
     <dl><dt>Order-ID</dt><dd>#${esc(o.order_no)}</dd><dt>Lagd</dt><dd>${when(o.created_at)}</dd><dt>Beställare</dt><dd>${esc(o.name)}, ${esc(o.team)}</dd><dt>E-post</dt><dd>${esc(o.contact)}</dd>${o.note ? '<dt>Kommentar</dt><dd>' + esc(o.note) + '</dd>' : ''}</dl>
     <div class="wr"><table><thead><tr><th class="r">Antal</th><th>Artikel</th><th>Storlek</th><th class="r">À-pris</th><th class="r">Summa</th><th>Status</th></tr></thead><tbody>${it.map(i => `<tr><td class="r">${i.qty} st</td><td>${esc(i.product_name)}</td><td>${esc(i.size || '–')}</td><td class="r">${kr(i.unit_price)}</td><td class="r">${kr(i.qty * i.unit_price)}</td><td>${i.ready ? '<span class="ok">✔ Klar</span>' : '<span class="m">Ej klar</span>'}</td></tr>`).join('')}</tbody>
-    <tfoot><tr><td colspan="4" class="r">Totalt</td><td class="r">${kr(tot)}</td><td></td></tr></tfoot></table></div><div class="ac"><button type="button" class="danger" data-del="${esc(o.id)}">Radera order…</button></div></details>`;
+    <tfoot><tr><td colspan="4" class="r">Totalt</td><td class="r">${kr(tot)}</td><td></td></tr></tfoot></table></div><div class="ac"><button type="button" class="dng" data-del="${esc(o.id)}">Radera order</button></div></details>`;
   }).join('') : '<p class="m">Inga ordrar hittades.</p>';
 }
 
