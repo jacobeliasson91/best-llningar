@@ -287,7 +287,7 @@ function form(p){
   <div style="margin-top:12px"><label for="fb">Åter i lager (valfritt, visas på produktkortet tills datumet passerat)</label><div class="row" style="border:0;padding:0"><input id="fb" type="date" value="${esc(p.back_in_stock || '')}" style="flex:1"><button type="button" id="fbx">Rensa</button></div></div>
   <label class="ck"><input type="checkbox" id="fa"${p.active !== false ? ' checked' : ''}> Visa i butiken</label>
   <p class="e" id="ferr" role="alert"></p>
-  <div class="ac"><button type="button" id="fsave" class="primary">Spara</button><button type="button" id="fcancel">Avbryt</button>${p.id ? '<button type="button" id="fdel" class="danger" style="margin-left:auto">Ta bort produkt</button>' : ''}</div>`, { wide: true, dismissable: false });
+  <div class="ac"><button type="button" id="fsave" class="primary">Spara</button><button type="button" id="fcancel">Avbryt</button>${p.id ? '<button type="button" id="fdel" class="dng" style="margin-left:auto">Ta bort produkt</button>' : ''}</div>`, { wide: true, dismissable: false });
   $('fbx').onclick = () => { $('fb').value = ''; };
   $('fcancel').onclick = () => pdlg.close();
   $('fi').onchange = async e => { const f = e.target.files[0]; if (!f) return; newImg = await shrink(f); $('fprev').outerHTML = '<img class="th" id="fprev" alt="" src="' + URL.createObjectURL(newImg) + '">'; };
